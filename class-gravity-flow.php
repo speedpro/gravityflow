@@ -4962,7 +4962,7 @@ AND m.meta_value='queued'";
 										 * @param Gravity_Flow_Step     $step
 										 * @param Gravity_Flow_Assignee $assignee
 										 */
-										$repeat_days = apply_filters( 'gravityflow_assignee_eamil_reminder_repeat_days', $repeat_days, $form, $entry, $current_step, $assignee );
+										$repeat_days = apply_filters( 'gravityflow_assignee_email_reminder_repeat_days', $repeat_days, $form, $entry, $current_step, $assignee );
 										if ( $repeat_days > 0 ) {
 											$repeat_trigger_timestamp = $reminder_timestamp + ( (int) $repeat_days * DAY_IN_SECONDS );
 											if ( time() > $repeat_trigger_timestamp ) {
