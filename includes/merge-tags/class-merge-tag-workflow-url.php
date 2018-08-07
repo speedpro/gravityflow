@@ -1,17 +1,29 @@
 <?php
+/**
+ * Gravity Flow Workflow URL Merge Tag
+ *
+ * @package     GravityFlow
+ * @copyright   Copyright (c) 2015-2018, Steven Henty S.L.
+ * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
+ */
 
 if ( ! class_exists( 'GFForms' ) ) {
 	die();
 }
 
-class Gravity_Flow_Merge_Tag_Workflow_Url extends Gravity_Flow_Merge_Tag {
+/**
+ * Class Gravity_Flow_Merge_Tag_Workflow_Url
+ *
+ * @since 1.7.1-dev
+ */
+class Gravity_Flow_Merge_Tag_Workflow_Url extends Gravity_Flow_Merge_Tag_Assignee_Base {
 
 	/**
 	 * The name of the merge tag.
 	 *
 	 * @since 1.7.1-dev
 	 *
-	 * @var null
+	 * @var string
 	 */
 	public $name = 'workflow_url';
 
@@ -84,68 +96,12 @@ class Gravity_Flow_Merge_Tag_Workflow_Url extends Gravity_Flow_Merge_Tag {
 		$token       = '';
 
 		if ( $this->assignee && $force_token ) {
-			$token_lifetime_days        = apply_filters( 'gravityflow_entry_token_expiration_days', 30, $this->assignee );
-			$token_expiration_timestamp = strtotime( '+' . (int) $token_lifetime_days . ' days' );
-			$token                      = gravity_flow()->generate_access_token( $this->assignee, null, $token_expiration_timestamp );
+			$token = $this->get_token();
 		}
 
 		return $token;
 	}
 
-	/**
-	 * Returns the inbox URL.
-	 *
-	 * @param int|null $page_id
-	 * @param string $access_token
-	 *
-	 * @return string
-	 */
-	public function get_inbox_url( $page_id = null, $access_token = '' ) {
-
-		$query_args = array(
-			'page' => 'gravityflow-inbox',
-		);
-
-		return Gravity_Flow_Common::get_workflow_url( $query_args, $page_id, $this->assignee, $access_token );
-	}
-
-	/**
-	 * Returns the entry URL.
-	 *
-	 * @param int|null $page_id
-	 * @param string $access_token
-	 *
-	 * @return string
-	 */
-	public function get_entry_url( $page_id = null, $access_token = '' ) {
-
-		$form_id = $this->step ? $this->step->get_form_id() : false;
-		if ( empty( $form_id ) && ! empty( $this->form ) ) {
-			$form_id = $this->form['id'];
-		}
-
-		if ( empty( $form_id ) ) {
-			return false;
-		}
-
-		$entry_id = $this->step ? $this->step->get_entry_id() : false;
-		if ( empty( $entry_id ) && ! empty( $this->entry ) ) {
-			$entry_id = $this->entry['id'];
-		}
-
-		if ( empty( $entry_id ) ) {
-			return false;
-		}
-
-		$query_args = array(
-			'page' => 'gravityflow-inbox',
-			'view' => 'entry',
-			'id'   => $form_id,
-			'lid'  => $entry_id,
-		);
-
-		return Gravity_Flow_Common::get_workflow_url( $query_args, $page_id, $this->assignee, $access_token );
-	}
 }
 
 Gravity_Flow_Merge_Tags::register( new Gravity_Flow_Merge_Tag_Workflow_Url );

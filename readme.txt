@@ -2,7 +2,7 @@
 Contributors: stevehenty
 Tags: workflow, approvals, gravity forms
 Requires at least: 4.2
-Tested up to: 4.9.1
+Tested up to: 4.9.5
 License: GPL-3.0+
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -54,6 +54,88 @@ https://gravityflow.io/contact/
 Gravity Flow will work with any license of [Gravity Forms](https://gravityflow.io/out/gravityforms).
 
 == ChangeLog ==
+
+= 2.2.3 =
+- Added the "Workflow: cancelled" notification event for sending form notifications when the workflow is cancelled.
+- Added the merge_tag {current_step} with [modifiers] for duration (time), expiration (date/time), ID, name (default), schedule (date/time), start (date/time) and type.
+- Fixed an issue which prevents tokens from working correctly with role assignees.
+- Fixed an issue which causes discussion field show / hide toggle to display on non-Gravity Flow pages.
+- Fixed an issue which prevents form connector mapping assignee field and export display of user-based field types (assignee, user, multiuser)
+- Fixed the step ID in the notification ID.
+- Fixed an issue where reminder emails may be sent out under certain circumstances when forms or steps are inactive.
+- Fixed some issues with RTL styles
+- Fixed some issues with styles on the Twenty Seventeen theme.
+- Fixed an issue with the status shortcode where the workflow_info and step_status attributes are ignored.
+
+
+
+= 2.2.2 =
+- Added the filter gravityflow_form_ids_inbox which allows adjustment of form id(s) when searching for entries for the inbox table.
+- Added the filter gravityflow_form_ids_status which allows adjustment of form id(s) when searching for entries for the status table.
+- Fixed a notice which can get displayed if GravityView is installed.
+- Fixed a compatibility issue with the Nested Forms Perk.
+- Fixed an issue with the assignee policy for multiple role assignees.
+- Fixed an issue where date field expiration may use the wrong field to calculate the expiration date.
+
+
+= 2.2.1 =
+- Fixed an issue preventing the one-click approve and reject links from working.
+- Fixed a fatal error which can occur if the entry is deleted before workflow processing starts.
+- Fixed a fatal error which can occur when entry detail permissions are evaluated with the status page shortcode set to allow anonymous access.
+- Fixed an issue with the Multi-User field on the User Input step where no fields are editable for the assignee.
+- Fixed a performance issue in the WP admin which can affect sites with a lot of users.
+
+= 2.2 =
+- Added the Multi-User field.
+- Added the filter gravityflow_step_status_evaluation_approval to allow the status evaluation of approval step to check custom logic (X of Y approvals).
+- Added the "Display all fields except selected" choice to the Display Fields setting.
+- Added searching to the lists of assignees.
+- Updated the Sprout Invoices step to support the new Sprout Invoices + Gravity Forms add-on.
+- Updated the existing choice labels in the Display Fields setting to "Display all fields" and "Hide all fields except selected".
+- Fixed editable Post Image field not being populated with the current entry value on the User Input step.
+- Fixed editable Post Image field value retaining the previous image URL on entry update if the step failed validation.
+- Fixed status export .csv to include duration as a separate column so it is consistent with status export table info.
+- Fixed a PHP warning for the Discussion field.
+- Fixed an issue with the approval step for assignees added via custom code.
+- Fixed some merge tags such as {created_by} being replaced in assignee notifications before the entry was available.
+
+= 2.1.1 =
+- Fixed editable Post Category field not being populated with the current entry value on the User Input step.
+- Fixed an issue which prevents the rendering of certain merge tags e.g. {workflow_form_submission_link} in extensions and custom code.
+
+= 2.1 =
+- Added support for the Gravity Perks Nested Forms add-on.
+- Added the current step as parameters to the gravityflow_feedback_approval_token and gravityflow_feedback_approval filters.
+- Added the filter gravityflow_feedback_cancel_workflow to allow the user feedback to be modified when the workflow is cancelled using the cancel workflow link.
+- Added the filter gravityflow_inbox_search_criteria to allow the search criteria to be modify.
+- Added the filter gravityflow_assignee_choices to allow the list of assignee choices to be modified in the step settings.
+- Added the filter gravityflow_step_schedule_timestamp to allow the scheduled start of steps to apply custom logic (business hours, delay specific entries, etc)
+- Added the filter gravityflow_event_limit_activity_page to allow the activity page to display custom amount of events
+- Added the filter gravityflow_discussion_items_display_toggle to allow view more / less effect to be modified per discussion field
+- Added the filter gravityflow_inbox_paging to inbox page to enable control of pagination options
+- Added the filter gravityflow_step_status_webhook to enable custom logic at conclusion of outbound webhook step processing
+- Added the filter gravityflow_response_message_webhook to enable customization of timeline note for an outbound webhook step
+- Added the Step ID # to workflow settings list. Accessible by mouseover in the row actions
+- Added the Step ID # to sub-title of edit step screen for existing steps
+- Updated the Status Page export to match table display and run gravityflow_field_value_status_table filter
+- Updated the Sliced Invoices integration.
+- Updated discussion field to display the view more / less effect on all step types for status and inbox pages. Previously limited to user input edit field.
+- Updated the Outgoing Webhook Step to handle multiple response codes appropriate statuses: 2xx (complete), 4xx (error_client), 5xx (error_server), other (error)
+- Fixed an issue where, in some situations, getting the next step was not using the latest version of the entry.
+- Fixed an issue where calculated product fields hidden by conditional logic could appear in order summary when the entry is updated on the User Input step.
+- Fixed an issue where feeds with conditional logic can block the progress of the workflow if the conditional is not met.
+- API: Updated the way assignees are handled to allow the base assignee class to be extended so new types of assignees can be created.
+
+
+= 2.0.1 =
+- Added the {workflow_fields} merge tag, similar to the {all_fields} merge tag with the following true/false attributes: empty, value, admin, editable and display.
+- Added 'Send to step' to admin action when workflow is complete.
+- Added the gravityflow_display_field_choices filter.
+- Added the gravityflow_date_format_entry_detail filter.
+- Added CSS RTL improvements.
+- Fixed an issue with the cron task to prevent running during the upgrade of Gravity Forms.
+- Fixed an issue where Section Breaks show during the User Input step regardless of being selected in the UI.
+
 
 = 2.0.0 =
 - Added the highlight setting to all the step settings.

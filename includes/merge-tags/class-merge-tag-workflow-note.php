@@ -1,9 +1,21 @@
 <?php
+/**
+ * Gravity Flow Workflow Note Merge Tag
+ *
+ * @package     GravityFlow
+ * @copyright   Copyright (c) 2015-2018, Steven Henty S.L.
+ * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
+ */
 
 if ( ! class_exists( 'GFForms' ) ) {
 	die();
 }
 
+/**
+ * Class Gravity_Flow_Merge_Tag_Workflow_Note
+ *
+ * @since 1.7.1-dev
+ */
 class Gravity_Flow_Merge_Tag_Workflow_Note extends Gravity_Flow_Merge_Tag {
 
 	/**
@@ -11,7 +23,7 @@ class Gravity_Flow_Merge_Tag_Workflow_Note extends Gravity_Flow_Merge_Tag {
 	 *
 	 * @since 1.7.1-dev
 	 *
-	 * @var null
+	 * @var string
 	 */
 	public $name = 'workflow_note';
 
@@ -29,7 +41,7 @@ class Gravity_Flow_Merge_Tag_Workflow_Note extends Gravity_Flow_Merge_Tag {
 	 *
 	 * @since 1.7.1-dev
 	 *
-	 * @param string $text  The text to be processed.
+	 * @param string $text The text to be processed.
 	 *
 	 * @return string
 	 */
@@ -178,7 +190,7 @@ class Gravity_Flow_Merge_Tag_Workflow_Note extends Gravity_Flow_Merge_Tag {
 	 */
 	protected function get_assignee_display_name( $assignee_or_key ) {
 		if ( ! $assignee_or_key instanceof Gravity_Flow_Assignee ) {
-			$assignee = new Gravity_Flow_Assignee( $assignee_or_key );
+			$assignee = Gravity_Flow_Assignees::create( $assignee_or_key );
 		} else {
 			$assignee = $assignee_or_key;
 		}

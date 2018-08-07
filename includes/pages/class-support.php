@@ -1,21 +1,27 @@
 <?php
+/**
+ * Gravity Flow Support
+ *
+ * @package     GravityFlow
+ * @subpackage  Classes/Gravity_Flow_Support
+ * @copyright   Copyright (c) 2015-2018, Steven Henty S.L.
+ * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
+ */
 
 if ( ! class_exists( 'GFForms' ) ) {
 	die();
 }
 
 /**
- * Gravity Flow Support
+ * Class Gravity_Flow_Support
  *
- *
- * @package     GravityFlow
- * @subpackage  Classes/Gravity_Flow_Support
- * @copyright   Copyright (c) 2015-2017, Steven Henty S.L.
- * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
- * @since       1.0
+ * @since 1.0
  */
 class Gravity_Flow_Support {
 
+	/**
+	 * Displays the support page content.
+	 */
 	public static function display() {
 
 		$license_message = '';
@@ -64,9 +70,11 @@ class Gravity_Flow_Support {
 
 			$body = array(
 				'input_values' => array(
-					'input_1' => rgpost( 'gravityflow_name' ),
+					'input_9_3' => rgpost( 'gravityflow_first_name' ),
+					'input_9_6' => rgpost( 'gravityflow_last_name' ),
 					'input_2' => rgpost( 'gravityflow_email' ),
 					'input_4' => rgpost( 'gravityflow_subject' ),
+					'input_7' => rgpost( 'gravityflow_brief_description' ),
 					'input_3' => rgpost( 'gravityflow_description' ),
 					'input_5' => $system_info,
 				),
@@ -128,14 +136,15 @@ class Gravity_Flow_Support {
 				?>
 				<div class="gravityflow_feedback_form">
 
-					<label for="gravityflow_name">
+					<label for="gravityflow_first_name">
 						<?php esc_html_e( 'Name', 'gravityflow' ); ?>
 					</label>
 
-					<input id="gravityflow_name" type="text" class="regular-text" name="gravityflow_name" value="<?php echo $user->display_name; ?>"/>
+					<input id="gravityflow_first_name" type="text" class="regular-text" name="gravityflow_first_name" value="<?php echo $user->user_firstname; ?>" placeholder="<?php esc_attr_e( 'First Name', 'gravityflow' ); ?>"/>
+					<input id="gravityflow_last_name" type="text" class="regular-text" name="gravityflow_last_name" value="<?php echo $user->user_lastname; ?>" placeholder="<?php esc_attr_e( 'Last Name', 'gravityflow' ); ?>"/>
 
 					<label for="gravityflow_email">
-						<?php esc_html_e( 'Email', 'gravityflow' ); ?>
+						<?php esc_html_e( 'Purchase Email', 'gravityflow' ); ?>
 					</label>
 
 					<input id="gravityflow_email" type="email" class="regular-text" name="gravityflow_email" value="<?php echo self::get_email(); ?>"/>
@@ -150,11 +159,17 @@ class Gravity_Flow_Support {
 						<?php esc_html_e( 'Feature request', 'gravityflow' ); ?>
 					</label>
 
-
 					<label for="gravityflow_subject_bug_report">
 						<input id="gravityflow_subject_bug_report" type="radio" name="gravityflow_subject" value="bug report"/>
 						<?php esc_html_e( 'Bug report', 'gravityflow' ); ?>
 					</label>
+
+					<label for="gravityflow_brief_description">
+						<?php esc_html_e( 'Subject', 'gravityflow' ); ?>
+					</label>
+
+					<input id="gravityflow_brief_description" type="text" class="regular-text" name="gravityflow_brief_description" />
+
 
 					<label for="gravityflow_description">
 						<?php esc_html_e( 'Suggestion or steps to reproduce the issue.', 'gravityflow' ); ?>
@@ -209,7 +224,7 @@ class Gravity_Flow_Support {
 		}
 		$plugins = join( ', ', $plugins );
 
-		//get theme info
+		// Get theme info.
 		$theme            = wp_get_theme();
 		$theme_name       = $theme->get( 'Name' );
 		$theme_uri        = $theme->get( 'ThemeURI' );

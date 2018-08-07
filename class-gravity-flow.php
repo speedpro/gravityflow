@@ -1,5 +1,13 @@
 <?php
-
+/**
+ * Gravity Flow
+ *
+ * @package     GravityFlow
+ * @subpackage  Classes/Gravity_Flow
+ * @copyright   Copyright (c) 2015-2018, Steven Henty S.L.
+ * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
+ * @since       1.0
+ */
 
 // Make sure Gravity Forms is active and already loaded.
 if ( class_exists( 'GFForms' ) ) {
@@ -9,36 +17,73 @@ if ( class_exists( 'GFForms' ) ) {
 	GFForms::include_feed_addon_framework();
 
 	/**
-	 * Gravity Flow
-	 *
-	 *
-	 * @package     GravityFlow
-	 * @subpackage  Classes/Gravity_Flow
-	 * @copyright   Copyright (c) 2015-2017, Steven Henty S.L.
-	 * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
-	 * @since       1.0
+	 * Class Gravity_Flow
 	 */
 	class Gravity_Flow extends GFFeedAddOn {
 
+		/**
+		 * The instance of this class.
+		 *
+		 * @var null|Gravity_Flow
+		 */
 		private static $_instance = null;
 
+		/**
+		 * Defines the add-on version.
+		 *
+		 * @var string
+		 */
 		public $_version = GRAVITY_FLOW_VERSION;
 
-		// The Framework will display an appropriate message on the plugins page if necessary
+		/**
+		 * The minimum Gravity Forms version required.
+		 *
+		 * The Framework will display an appropriate message on the plugins page if necessary
+		 *
+		 * @var string
+		 */
 		protected $_min_gravityforms_version = '2.1';
 
+		/**
+		 * The add-on slug.
+		 *
+		 * @var string
+		 */
 		protected $_slug = 'gravityflow';
 
+		/**
+		 * The path to the main plugin file, relative to the WordPress plugins folder.
+		 *
+		 * @var string
+		 */
 		protected $_path = 'gravityflow/gravityflow.php';
 
+		/**
+		 * The full path to this file.
+		 *
+		 * @var string
+		 */
 		protected $_full_path = __FILE__;
 
-		// Title of the plugin to be used on the settings page, form settings and plugins page.
+		/**
+		 * Title of the plugin to be used on the settings page, form settings and plugins page.
+		 *
+		 * @var string
+		 */
 		protected $_title = 'Gravity Flow';
 
-		// Short version of the plugin title to be used on menus and other places where a less verbose string is useful.
+		/**
+		 * Short version of the plugin title to be used on menus and other places where a less verbose string is useful.
+		 *
+		 * @var string
+		 */
 		protected $_short_title = 'Workflow';
 
+		/**
+		 * The capabilities to be listed by the Members plugin.
+		 *
+		 * @var array
+		 */
 		protected $_capabilities = array(
 			'gravityflow_uninstall',
 			'gravityflow_settings',
@@ -52,8 +97,25 @@ if ( class_exists( 'GFForms' ) ) {
 			'gravityflow_workflow_detail_admin_actions',
 		);
 
+		/**
+		 * The capability required to access the app settings.
+		 *
+		 * @var string
+		 */
 		protected $_capabilities_app_settings = 'gravityflow_settings';
+
+		/**
+		 * The capability required to create steps.
+		 *
+		 * @var string
+		 */
 		protected $_capabilities_form_settings = 'gravityflow_create_steps';
+
+		/**
+		 * The app menu capabilities.
+		 *
+		 * @var array
+		 */
 		protected $_capabilities_app_menu = array(
 			'gravityflow_uninstall',
 			'gravityflow_settings',
@@ -64,8 +126,19 @@ if ( class_exists( 'GFForms' ) ) {
 			'gravityflow_activity',
 			'gravityflow_reports',
 		);
+
+		/**
+		 * The capability required to uninstall the plugin.
+		 *
+		 * @var string
+		 */
 		protected $_capabilities_uninstall = 'gravityflow_uninstall';
 
+		/**
+		 * Returns an instance of this class, and stores it in the $_instance property.
+		 *
+		 * @return null|Gravity_Flow
+		 */
 		public static function get_instance() {
 			if ( self::$_instance == null ) {
 				self::$_instance = new Gravity_Flow();
@@ -74,12 +147,22 @@ if ( class_exists( 'GFForms' ) ) {
 			return self::$_instance;
 		}
 
+		/**
+		 * The assignee status feedback.
+		 *
+		 * @var null|string
+		 */
 		private $_custom_page_content = null;
 
+		/**
+		 * Disallow cloning of the class.
+		 */
 		private function __clone() {
-		} /* do nothing */
+		}
 
-
+		/**
+		 * Adds hooks which need to be included before the init hook is triggered.
+		 */
 		public function pre_init() {
 			add_filter( 'gform_export_form', array( $this, 'filter_gform_export_form' ) );
 			add_action( 'gform_forms_post_import', array( $this, 'action_gform_forms_post_import' ) );
@@ -93,6 +176,9 @@ if ( class_exists( 'GFForms' ) ) {
 			add_action( 'wp', array( $this, 'filter_wp' ) );
 		}
 
+		/**
+		 * Adds hooks required in both the front-end and the admin.
+		 */
 		public function init() {
 			parent::init();
 
@@ -121,12 +207,15 @@ if ( class_exists( 'GFForms' ) ) {
 				)
 			);
 
-			// GravityView Integration
+			// GravityView Integration.
 			add_filter( 'gravityview/adv_filter/field_filters', array( $this, 'filter_gravityview_adv_filter_field_filters' ), 10, 2 );
 			add_filter( 'gravityview_search_criteria', array( $this, 'filter_gravityview_search_criteria' ), 999, 3 );
 			add_filter( 'gravityview/common/get_entry/check_entry_display', array( $this, 'filter_gravityview_common_get_entry_check_entry_display' ), 999, 2 );
 		}
 
+		/**
+		 * Adds the admin side hooks.
+		 */
 		public function init_admin() {
 			parent::init_admin();
 
@@ -157,6 +246,9 @@ if ( class_exists( 'GFForms' ) ) {
 			}
 		}
 
+		/**
+		 * Adds the Ajax hooks.
+		 */
 		public function init_ajax() {
 			parent::init_ajax();
 			add_action( 'wp_ajax_gravityflow_save_feed_order', array( $this, 'ajax_save_feed_order' ) );
@@ -170,6 +262,9 @@ if ( class_exists( 'GFForms' ) ) {
 			add_action( 'wp_ajax_gravityflow_download_export', array( $this, 'ajax_download_export' ) );
 		}
 
+		/**
+		 * Adds the front-end hooks.
+		 */
 		public function init_frontend() {
 			parent::init_frontend();
 			add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_scripts' ), 10 );
@@ -180,20 +275,33 @@ if ( class_exists( 'GFForms' ) ) {
 			}
 		}
 
+		/**
+		 * Returns the plugin short title.
+		 *
+		 * @return string
+		 */
 		public function get_short_title() {
 			return $this->translate_navigation_label( 'workflow' );
 		}
 
+		/**
+		 * Installs or upgrades the plugin.
+		 */
 		public function setup() {
 			parent::setup();
 		}
 
+		/**
+		 * Performs installation or upgrade tasks.
+		 *
+		 * @param string $previous_version The previously installed version number.
+		 */
 		public function upgrade( $previous_version ) {
 
 			wp_cache_flush();
 
 			if ( empty( $previous_version ) ) {
-				// New installation
+				// New installation.
 				$settings = $this->get_app_settings();
 				if ( defined( 'GRAVITY_FLOW_LICENSE_KEY' ) ) {
 					$settings['license_key'] = GRAVITY_FLOW_LICENSE_KEY;
@@ -204,13 +312,17 @@ if ( class_exists( 'GFForms' ) ) {
 				$this->update_app_settings( $settings );
 
 			} else {
-				// Upgrade
+				// Upgrade.
 				if ( version_compare( $previous_version,'1.5.1', '<' ) ) {
 					$this->fix_workflow_field_choices();
 				}
 
 				if ( version_compare( $previous_version,'1.7.1-dev', '<' ) ) {
 					$this->upgrade_171();
+				}
+
+				if ( version_compare( $previous_version, '2.0.2-dev', '<' ) ) {
+					$this->upgrade_202();
 				}
 			}
 
@@ -219,10 +331,13 @@ if ( class_exists( 'GFForms' ) ) {
 			$this->setup_db();
 		}
 
+		/**
+		 * Creates the activity log table.
+		 */
 		private function setup_db() {
 			global $wpdb;
 
-			// Default collatation
+			// Default collation.
 			$charset_collate = 'utf8_unicode_ci';
 
 			require_once( ABSPATH . '/wp-admin/includes/upgrade.php' );
@@ -254,7 +369,7 @@ PRIMARY KEY  (id)
 			if ( class_exists( 'GF_Upgrade' ) ) {
 				add_filter( 'dbdelta_create_queries', array( gf_upgrade(), 'dbdelta_fix_case' ) );
 			} else {
-				// deprecated since Gravity Forms 2.2
+				// Deprecated since Gravity Forms 2.2.
 				add_filter( 'dbdelta_create_queries', array( 'RGForms', 'dbdelta_fix_case' ) );
 			}
 
@@ -263,7 +378,7 @@ PRIMARY KEY  (id)
 			if ( class_exists( 'GF_Upgrade' ) ) {
 				remove_filter( 'dbdelta_create_queries', array( gf_upgrade(), 'dbdelta_fix_case' ) );
 			} else {
-				// deprecated since Gravity Forms 2.2
+				// Deprecated since Gravity Forms 2.2.
 				remove_filter( 'dbdelta_create_queries', array( 'RGForms', 'dbdelta_fix_case' ) );
 			}
 		}
@@ -280,7 +395,7 @@ PRIMARY KEY  (id)
 				$form_dirty = false;
 				if ( isset( $form['fields'] ) && is_array( $form['fields'] ) ) {
 					foreach ( $form['fields'] as $field ) {
-						/** @var GF_Field $field */
+						/* @var GF_Field $field */
 						if ( in_array( $field->type, array( 'workflow_assignee_select', 'workflow_user', 'workflow_role' ) ) ) {
 							if ( is_array( $field->choices ) ) {
 								$field->choices = '';
@@ -295,6 +410,9 @@ PRIMARY KEY  (id)
 			}
 		}
 
+		/**
+		 * Updates the steps in the database for compatibility with versions 1.7.1 and greater.
+		 */
 		public function upgrade_171() {
 			$steps = $this->get_steps();
 
@@ -328,7 +446,48 @@ PRIMARY KEY  (id)
 			}
 		}
 
-		// Enqueue the JavaScript and output the root url and the nonce.
+		/**
+		 * Migrate the custom settings added by Gravity_Flow_Step_Feed_Sliced_Invoices to their equivalent settings in the Sliced Invoices add-on.
+		 */
+		public function upgrade_202() {
+			$feeds = $this->get_feeds_by_slug( 'slicedinvoices' );
+
+			foreach ( $feeds as $feed ) {
+				$feed_dirty = false;
+				$feed_meta  = $feed['meta'];
+
+				$quote_status = rgar( $feed_meta, 'quote_status' );
+				if ( $quote_status ) {
+					$feed_meta['set_quote_status'] = $quote_status;
+					unset( $feed_meta['quote_status'] );
+					$feed_dirty = true;
+				}
+
+				$invoice_status = rgar( $feed_meta, 'invoice_status' );
+				if ( $quote_status ) {
+					$feed_meta['set_invoice_status'] = $invoice_status;
+					unset( $feed_meta['invoice_status'] );
+					$feed_dirty = true;
+				}
+
+				$line_items = rgar( $feed_meta, 'mappedFields_line_items' );
+				if ( $line_items === 'entry_order_summary' ) {
+					$feed_meta['use_product_fields']      = true;
+					$feed_meta['mappedFields_line_items'] = '';
+					$feed_dirty                           = true;
+				}
+
+				if ( $feed_dirty ) {
+					$this->update_feed_meta( $feed['id'], $feed_meta );
+				}
+			}
+		}
+
+		/**
+		 * Enqueue the JavaScript and output the root url and the nonce.
+		 *
+		 * @return array
+		 */
 		public function scripts() {
 			$form_id        = absint( rgget( 'id' ) );
 			$form           = GFAPI::get_form( $form_id );
@@ -344,7 +503,7 @@ PRIMARY KEY  (id)
 				}
 			}
 
-			$users = is_admin() ? $this->get_users_as_choices() : array();
+			$users = $this->is_form_settings( 'gravityflow' ) ? $this->get_users_as_choices() : array();
 
 			$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
 
@@ -402,6 +561,16 @@ PRIMARY KEY  (id)
 					),
 				),
 				array(
+					'handle'  => 'gravityflow_quicksearch',
+					'src'     => $this->get_base_url() . "/js/quicksearch{$min}.js",
+					'deps'    => array( 'jquery' ),
+					'version' => $this->_version,
+					'enqueue' => array(
+						array( 'query' => 'page=gf_edit_forms&view=settings&subview=gravityflow&fid=_notempty_' ),
+						array( 'query' => 'page=gf_edit_forms&view=settings&subview=gravityflow&fid=0' ),
+					),
+				),
+				array(
 					'handle'  => 'gf_routing_setting',
 					'src'     => $this->get_base_url() . "/js/routing-setting{$min}.js",
 					'deps'    => array( 'jquery' ),
@@ -429,6 +598,7 @@ PRIMARY KEY  (id)
 						'feedId'         => absint( rgget( 'fid' ) ),
 						'formId'         => absint( rgget( 'id' ) ),
 						'mergeTagLabels' => $this->get_form_settings_js_merge_tag_labels(),
+						'assigneeSearchPlaceholder' => esc_attr__( 'Type to search', 'gravityflow' ),
 					),
 				),
 				array(
@@ -508,6 +678,11 @@ PRIMARY KEY  (id)
 			return array_merge( parent::scripts(), $scripts );
 		}
 
+		/**
+		 * Target for the wp_enqueue_scripts hook.
+		 *
+		 * Enqueues the required front-end scripts when the shortcode is found in the post content.
+		 */
 		public function enqueue_frontend_scripts() {
 			global $wp_query;
 			if ( isset( $wp_query->posts ) && is_array( $wp_query->posts ) ) {
@@ -543,6 +718,11 @@ PRIMARY KEY  (id)
 			}
 		}
 
+		/**
+		 * Determines if the gravityflow shortcode is used in the post content.
+		 *
+		 * @return bool
+		 */
 		public function look_for_shortcode() {
 			global $wp_query;
 
@@ -556,6 +736,15 @@ PRIMARY KEY  (id)
 			return $shortcode_found;
 		}
 
+		/**
+		 * Target of the nonce_user_logged_out hook.
+		 *
+		 * Sets the uid used in the logged out user nonce to the assignee key.
+		 *
+		 * @param int $uid ID of the nonce-owning user.
+		 *
+		 * @return int|string Zero or the assignee key.
+		 */
 		public function filter_nonce_user_logged_out( $uid ) {
 			if ( empty( $uid ) ) {
 				$assignee_key = $this->get_current_user_assignee_key();
@@ -566,6 +755,14 @@ PRIMARY KEY  (id)
 			return $uid;
 		}
 
+		/**
+		 * Target of the gform_enqueue_scripts hook.
+		 *
+		 * Enqueues the chosen script if a workflow field has the enhanced ui enabled.
+		 *
+		 * @param array $form    The current form.
+		 * @param bool  $is_ajax Indicates if Ajax is enabled for this form.
+		 */
 		public function filter_gform_enqueue_scripts( $form, $is_ajax ) {
 
 			if ( $this->has_enhanced_dropdown( $form ) ) {
@@ -578,6 +775,13 @@ PRIMARY KEY  (id)
 			}
 		}
 
+		/**
+		 * Adds the enhanced ui init scripts for the workflow fields.
+		 *
+		 * @param array $form         The current form.
+		 * @param array $field_values The dynamic population field values.
+		 * @param bool  $is_ajax      Indicates if Ajax is enabled for this form.
+		 */
 		public function filter_gform_register_init_scripts( $form, $field_values, $is_ajax ) {
 
 			if ( $this->has_enhanced_dropdown( $form ) ) {
@@ -587,11 +791,18 @@ PRIMARY KEY  (id)
 			}
 		}
 
+		/**
+		 * Returns the enhanced ui init script for the workflow field.
+		 *
+		 * @param array $form The current form.
+		 *
+		 * @return string
+		 */
 		public static function get_chosen_init_script( $form ) {
 			$chosen_fields = array();
 			foreach ( $form['fields'] as $field ) {
 				$input_type = GFFormsModel::get_input_type( $field );
-				if ( $field->enableEnhancedUI && in_array( $input_type, array( 'workflow_assignee_select', 'workflow_user', 'workflow_role' ) ) ) {
+				if ( $field->enableEnhancedUI && in_array( $input_type, array( 'workflow_assignee_select', 'workflow_user', 'workflow_role', 'workflow_multi_user' ) ) ) {
 					$chosen_fields[] = "#input_{$form['id']}_{$field->id}";
 				}
 			}
@@ -599,6 +810,13 @@ PRIMARY KEY  (id)
 			return "gformInitChosenFields('" . implode( ',', $chosen_fields ) . "','" . esc_attr( apply_filters( "gform_dropdown_no_results_text_{$form['id']}", apply_filters( 'gform_dropdown_no_results_text', __( 'No results matched', 'gravityflow' ), $form['id'] ), $form['id'] ) ) . "');";
 		}
 
+		/**
+		 * Determines if the enhanced UI is enabled on at least one of the workflow fields.
+		 *
+		 * @param array $form The current form.
+		 *
+		 * @return bool
+		 */
 		public function has_enhanced_dropdown( $form ) {
 
 			if ( ! is_array( $form['fields'] ) ) {
@@ -606,7 +824,7 @@ PRIMARY KEY  (id)
 			}
 
 			foreach ( $form['fields'] as $field ) {
-				if ( in_array( RGFormsModel::get_input_type( $field ), array( 'workflow_assignee_select', 'workflow_user', 'workflow_role' ) ) && $field->enableEnhancedUI ) {
+				if ( in_array( RGFormsModel::get_input_type( $field ), array( 'workflow_assignee_select', 'workflow_user', 'workflow_role', 'workflow_multi_user' ) ) && $field->enableEnhancedUI ) {
 					return true;
 				}
 			}
@@ -614,12 +832,22 @@ PRIMARY KEY  (id)
 			return false;
 		}
 
+		/**
+		 * The feeds list page title.
+		 *
+		 * @return string
+		 */
 		public function feed_list_title() {
 			$url = add_query_arg( array( 'fid' => '0' ) );
 			$url = esc_url( $url );
 			return esc_html__( 'Workflow Steps', 'gravityflow' ) . " <a class='add-new-h2' href='{$url}'>" . __( 'Add New' , 'gravityflow' ) . '</a>';
 		}
 
+		/**
+		 * The stylesheets to be enqueued.
+		 *
+		 * @return array
+		 */
 		public function styles() {
 
 			$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
@@ -759,10 +987,26 @@ PRIMARY KEY  (id)
 			return array_merge( parent::styles(), $styles );
 		}
 
+		/**
+		 * The feed settings page title.
+		 *
+		 * @return string
+		 */
 		public function feed_settings_title() {
 			return esc_html__( 'Workflow Step Settings', 'gravityflow' );
 		}
 
+		/**
+		 * Target for the set-screen-option hook.
+		 *
+		 * Sets the value of the entries_per_page option.
+		 *
+		 * @param bool|int $status False or the screen option value.
+		 * @param string   $option The option name.
+		 * @param int      $value  Screen option value.
+		 *
+		 * @return mixed
+		 */
 		public function set_option( $status, $option, $value ) {
 			if ( 'entries_per_page' == $option ) {
 				return $value;
@@ -771,6 +1015,11 @@ PRIMARY KEY  (id)
 			return $status;
 		}
 
+		/**
+		 * Returns a choices array containing users, roles, and applicable form fields.
+		 *
+		 * @return array
+		 */
 		public function get_users_as_choices() {
 
 			$role_choices = Gravity_Flow_Common::get_roles_as_choices( true, true );
@@ -826,9 +1075,26 @@ PRIMARY KEY  (id)
 				);
 			}
 
+			/**
+			 * Allows the assignee choices to be modified.
+			 *
+			 * @since 2.1
+			 *
+			 * @param array $choices The assignee choices
+			 * @param array $form    The Form
+			 */
+			$choices = apply_filters( 'gravityflow_assignee_choices', $choices, $form );
+
 			return $choices;
 		}
 
+		/**
+		 * Returns a choices array containing the forms assignee fields.
+		 *
+		 * @param null|array $form Null or the form to retrieve the assignee fields from.
+		 *
+		 * @return array
+		 */
 		public function get_assignee_fields_as_choices( $form = null ) {
 			if ( empty( $form ) ) {
 				$form_id = absint( rgget( 'id' ) );
@@ -844,6 +1110,8 @@ PRIMARY KEY  (id)
 						$assignee_fields[] = array( 'label' => GFFormsModel::get_label( $field ), 'value' => 'assignee_field|' . $field->id );
 					} elseif ( $type == 'workflow_user' ) {
 						$assignee_fields[] = array( 'label' => GFFormsModel::get_label( $field ), 'value' => 'assignee_user_field|' . $field->id );
+					} elseif ( $type == 'workflow_multi_user' ) {
+						$assignee_fields[] = array( 'label' => GFFormsModel::get_label( $field ), 'value' => 'assignee_multi_user_field|' . $field->id );
 					} elseif ( $type == 'workflow_role' ) {
 						$assignee_fields[] = array( 'label' => GFFormsModel::get_label( $field ), 'value' => 'assignee_role_field|' . $field->id );
 					}
@@ -852,7 +1120,14 @@ PRIMARY KEY  (id)
 			return $assignee_fields;
 		}
 
-		public function get_email_fields_as_choices( $form = null) {
+		/**
+		 * Returns a choices array containing the forms email fields.
+		 *
+		 * @param null|array $form Null or the form to retrieve the email fields from.
+		 *
+		 * @return array
+		 */
+		public function get_email_fields_as_choices( $form = null ) {
 			if ( empty( $form ) ) {
 				$form_id = absint( rgget( 'id' ) );
 				$form = GFAPI::get_form( $form_id );
@@ -871,8 +1146,7 @@ PRIMARY KEY  (id)
 		}
 
 		/**
-		 * Override the feed_settings_field() function and return the configuration for the Feed Settings.
-		 * Updating is handled by the Framework.
+		 * The settings to appear on the edit feed page.
 		 *
 		 * @return array
 		 */
@@ -905,13 +1179,17 @@ PRIMARY KEY  (id)
 				'type'       => 'radio_image',
 				'horizontal' => true,
 				'required'   => true,
-				'onchange' => 'jQuery(this).parents("form").submit();',
+				'onchange'   => 'jQuery(this).parents("form").submit();',
 				'choices'    => $step_type_choices,
 			);
 
 
+			$step_id = absint( rgget( 'fid' ) );
+
+			$step_title = $step_id === 0 ? $step_title = esc_html__( 'Step', 'gravityflow' ) : esc_html__( 'Step ID #', 'gravityflow' ) . $step_id;
+
 			$settings[] = array(
-				'title'  => 'Step',
+				'title'  => $step_title,
 				'fields' => array(
 					array(
 						'name'     => 'step_name',
@@ -1022,6 +1300,9 @@ PRIMARY KEY  (id)
 			return $settings;
 		}
 
+		/**
+		 * Ajax handler the for the feed message request.
+		 */
 		public function ajax_feed_message() {
 			$html            = '';
 			$warning         = false;
@@ -1051,6 +1332,14 @@ PRIMARY KEY  (id)
 			die();
 		}
 
+		/**
+		 * Sets the _assignee_settings_md5 class property on feed validation, if there are entries on this step.
+		 *
+		 * @param array  $field         The field properties.
+		 * @param string $field_setting The field value.
+		 *
+		 * @return bool
+		 */
 		public function save_feed_validation_callback( $field, $field_setting ) {
 
 			$current_step_id = $this->get_current_feed_id();
@@ -1079,6 +1368,12 @@ PRIMARY KEY  (id)
 			return true;
 		}
 
+		/**
+		 * Updates the feed properties and triggers the assignee refresh.
+		 *
+		 * @param int   $id   The feed ID.
+		 * @param array $meta The feed properties.
+		 */
 		public function update_feed_meta( $id, $meta ) {
 			parent::update_feed_meta( $id, $meta );
 			$results = $this->maybe_refresh_assignees();
@@ -1088,6 +1383,11 @@ PRIMARY KEY  (id)
 			}
 		}
 
+		/**
+		 * Triggers the assignees refresh of the current forms active entries, if applicable.
+		 *
+		 * @return array
+		 */
 		public function maybe_refresh_assignees() {
 			$results = array(
 				'removed' => array(),
@@ -1119,6 +1419,11 @@ PRIMARY KEY  (id)
 			return $results;
 		}
 
+		/**
+		 * Refreshes the assignees for active entries for the current form.
+		 *
+		 * @return array
+		 */
 		public function refresh_assignees() {
 			$results = array(
 				'removed' => array(),
@@ -1131,7 +1436,7 @@ PRIMARY KEY  (id)
 			$entry_count = $current_step->entry_count();
 
 			if ( $entry_count == 0 ) {
-				// Nothing to do
+				// Nothing to do.
 				return $results;
 			}
 
@@ -1154,7 +1459,7 @@ PRIMARY KEY  (id)
 					$assignee_key = $assignee->get_key();
 
 					if ( ! isset( $assignee_status[ $assignee_key ] ) ) {
-						// New assignee
+						// New assignee.
 						$step = $this->get_step( $current_step_id, $entry );
 						$assignee->update_status( 'pending' );
 						$step->end_if_complete();
@@ -1170,8 +1475,8 @@ PRIMARY KEY  (id)
 							continue 2;
 						}
 					}
-					// No longer an assignee - remove
-					$old_assignee = new Gravity_Flow_Assignee( $old_assignee_key, $step_for_entry );
+					// No longer an assignee - remove.
+					$old_assignee = Gravity_Flow_Assignees::create( $old_assignee_key, $step_for_entry );
 					$old_assignee->remove();
 					$old_assignee->log_event( 'removed' );
 					$results['removed'][] = $old_assignee;
@@ -1186,6 +1491,13 @@ PRIMARY KEY  (id)
 			return $results;
 		}
 
+		/**
+		 * Queries the database for assigned active entries for the specified form.
+		 *
+		 * @param int $form_id The form ID.
+		 *
+		 * @return array
+		 */
 		public function get_asssignee_status_by_entry( $form_id ) {
 			global $wpdb;
 			$assignee_status_by_entry = array();
@@ -1258,6 +1570,18 @@ PRIMARY KEY  (id)
 			return $assignee_status_by_entry;
 		}
 
+		/**
+		 * Target for the gform_entries_field_value hook.
+		 *
+		 * Sets the value for the workflow_step column.
+		 *
+		 * @param string $value    The entry value to be filtered.
+		 * @param int    $form_id  The current form ID.
+		 * @param int    $field_id The current field ID.
+		 * @param array  $entry    The current entry.
+		 *
+		 * @return string
+		 */
 		public function filter_gform_entries_field_value( $value, $form_id, $field_id, $entry ) {
 			if ( $field_id == 'workflow_step' ) {
 				if ( empty( $value ) ) {
@@ -1272,6 +1596,9 @@ PRIMARY KEY  (id)
 			return $value;
 		}
 
+		/**
+		 * Ajax handler for the request to save the custom feed order.
+		 */
 		public function ajax_save_feed_order() {
 			$feed_ids = rgpost( 'feed_ids' );
 			$form_id  = absint( rgpost( 'form_id' ) );
@@ -1284,12 +1611,22 @@ PRIMARY KEY  (id)
 			die();
 		}
 
+		/**
+		 * Ajax handler for the print entries request, triggers output of the selected entries.
+		 */
 		public function ajax_print_entries() {
 			require_once( $this->get_base_path() . '/includes/pages/class-print-entries.php' );
 			Gravity_Flow_Print_Entries::render();
 			exit();
 		}
 
+		/**
+		 * Get the feeds for the specified form and sort them if applicable.
+		 *
+		 * @param null|int $form_id Null or the form ID.
+		 *
+		 * @return array
+		 */
 		public function get_feeds( $form_id = null ) {
 
 			$feeds = parent::get_feeds( $form_id );
@@ -1311,8 +1648,10 @@ PRIMARY KEY  (id)
 		}
 
 		/**
-		 * @param null $form_id
-		 * @param null $entry
+		 * Get the workflow steps.
+		 *
+		 * @param null|int   $form_id Null or the form ID.
+		 * @param null|array $entry   Null or the entry to initialize the steps for.
 		 *
 		 * @return Gravity_Flow_Step[]
 		 */
@@ -1331,6 +1670,14 @@ PRIMARY KEY  (id)
 			return $steps;
 		}
 
+		/**
+		 * The usort() callback for sorting the feeds.
+		 *
+		 * @param array $a The first feed to compare.
+		 * @param array $b The second feed to compare.
+		 *
+		 * @return bool|int
+		 */
 		public function sort_feeds( $a, $b ) {
 			$order = $this->step_order;
 			$a     = array_search( $a['id'], $order );
@@ -1347,19 +1694,18 @@ PRIMARY KEY  (id)
 			}
 		}
 
-		/***
+		/**
 		 * Renders and initializes a radio field or a collection of radio fields based on the $field array.
 		 * Images/icons are used in place of the HTML radio buttons.
 		 *
-		 * @param array $field - Field array containing the configuration options of this field
-		 * @param bool  $echo  = true - true to echo the output to the screen, false to simply return the contents as a string
+		 * @param array $field Field array containing the configuration options of this field.
+		 * @param bool  $echo  True to echo the output to the screen, false to simply return the contents as a string.
 		 *
-		 * @return string Returns the markup for the radio buttons
-		 *
+		 * @return string Returns the markup for the radio buttons.
 		 */
 		protected function settings_radio_image( $field, $echo = true ) {
 
-			$field['type'] = 'radio'; //making sure type is set to radio
+			$field['type'] = 'radio'; // Making sure type is set to radio.
 
 			$selected_value   = $this->get_setting( $field['name'], rgar( $field, 'default_value' ) );
 			$field_attributes = $this->get_field_attributes( $field );
@@ -1417,6 +1763,11 @@ PRIMARY KEY  (id)
 			return $html;
 		}
 
+		/**
+		 * Renders the HTML for the schedule setting.
+		 *
+		 * @param array $field The field properties.
+		 */
 		public function settings_schedule( $field ) {
 
 			$form = $this->get_current_form();
@@ -1599,6 +1950,11 @@ PRIMARY KEY  (id)
 
 		}
 
+		/**
+		 * Renders the HTML for the expiration setting.
+		 *
+		 * @param array $field The field properties.
+		 */
 		public function settings_expiration( $field ) {
 
 			$form = $this->get_current_form();
@@ -1817,9 +2173,9 @@ PRIMARY KEY  (id)
 		 *
 		 * @since 1.9.2
 		 *
-		 * @param array $field
+		 * @param array $field The field properties.
 		 *
-		 * @return string|void
+		 * @return string
 		 */
 		public function settings_step_highlight( $field ) {
 			$field = $this->prepare_settings_step_highlight( $field );
@@ -1828,14 +2184,14 @@ PRIMARY KEY  (id)
 		}
 
 		/**
-		* Prepare the step_highlight composite settings to be accessible for every field in the composite
-		*
-		* @since 1.9.2
-		*
-		* @param array $field The step_highlight field
-		*
-		* @return array
-		*/
+		 * Prepare the step_highlight composite settings to be accessible for every field in the composite.
+		 *
+		 * @since 1.9.2
+		 *
+		 * @param array $field The field properties.
+		 *
+		 * @return array
+		 */
 		public function prepare_settings_step_highlight( $field ) {
 			unset( $field['settings'] );
 
@@ -1873,13 +2229,13 @@ PRIMARY KEY  (id)
 		}
 
 		/**
-		 * Generate the step_highlight composite setting container
+		 * Generate the step_highlight composite setting container.
 		 *
 		 * The container will be displayed or hidden depending on the value of the step_highlight checkbox field.
 		 *
 		 * @since 1.9.2
 		 *
-		 * @param array $field The step_highlight field
+		 * @param array $field The field properties.
 		 *
 		 * @return string|void
 		 */
@@ -1915,13 +2271,18 @@ PRIMARY KEY  (id)
 					$(document).ready(function () {
 						$("#step_highlight_color").wpColorPicker();
 					});
-				})(jQuery); 
+				})(jQuery);
 			</script>
 			<?php
 
 			return;
 		}
 
+		/**
+		 * Renders the tabs setting.
+		 *
+		 * @param array $tabs_field The field properties.
+		 */
 		public function settings_tabs( $tabs_field ) {
 			printf( '<div id="tabs-%s">', $tabs_field['name'] );
 			echo '<ul>';
@@ -1967,8 +2328,8 @@ PRIMARY KEY  (id)
 		 *
 		 * @since 1.5.1
 		 *
-		 * @param array $field
-		 * @param bool  $echo
+		 * @param array $field The field properties.
+		 * @param bool  $echo  Indicates if the HTML should be echoed.
 		 *
 		 * @return string
 		 */
@@ -2064,8 +2425,8 @@ PRIMARY KEY  (id)
 		 * @since 1.5.1 Updated to use Gravity_Flow::settings_checkbox_and_container()
 		 * @since unknown
 		 *
-		 * @param array $field
-		 * @param bool  $echo
+		 * @param array $field The field properties.
+		 * @param bool  $echo  Indicates if the HTML should be echoed.
 		 *
 		 * @return string
 		 */
@@ -2098,8 +2459,8 @@ PRIMARY KEY  (id)
 		 * @since 1.5.1 Updated to use Gravity_Flow::settings_checkbox_and_container()
 		 * @since unknown
 		 *
-		 * @param array $field
-		 * @param bool  $echo
+		 * @param array $field The field properties.
+		 * @param bool  $echo  Indicates if the HTML should be echoed.
 		 *
 		 * @return string
 		 */
@@ -2109,6 +2470,13 @@ PRIMARY KEY  (id)
 			return $this->settings_checkbox_and_container( $field, $echo );
 		}
 
+		/**
+		 * Adds the textarea settings to the field properties array.
+		 *
+		 * @param array $field The field properties.
+		 *
+		 * @return array
+		 */
 		public function prepare_settings_checkbox_and_textarea( $field ) {
 			$textarea_input = rgars( $field, 'textarea' );
 
@@ -2130,6 +2498,12 @@ PRIMARY KEY  (id)
 			return $field;
 		}
 
+		/**
+		 * Validate the combined checkbox and textarea setting.
+		 *
+		 * @param array $field    The field properties.
+		 * @param array $settings The settings to be potentially saved.
+		 */
 		public function validate_checkbox_and_textarea_settings( $field, $settings ) {
 			$field = $this->prepare_settings_checkbox_and_textarea( $field );
 
@@ -2141,13 +2515,13 @@ PRIMARY KEY  (id)
 		}
 
 		/**
-		 * Validate step_highlight composite setting
+		 * Validate step_highlight composite setting.
 		 *
-		 * Validate the sub-settings are of appropriate type and required status
-		 * 
+		 * Validate the sub-settings are of appropriate type and required status.
+		 *
 		 * @since 1.9.2
 		 *
-		 * @param array $field The field properties.
+		 * @param array $field    The field properties.
 		 * @param array $settings The settings to be potentially saved.
 		 */
 		public function validate_step_highlight_settings( $field, $settings ) {
@@ -2163,11 +2537,11 @@ PRIMARY KEY  (id)
 		}
 
 		/**
-		 * Validate step_highlight_color is a hexadecimal code
+		 * Validate step_highlight_color is a hexadecimal code.
 		 *
 		 * @since 1.9.2
 		 *
-		 * @param array $field The field properties.
+		 * @param array $field    The field properties.
 		 * @param array $settings The settings to be potentially saved.
 		 */
 		public function validate_step_highlight_color_settings( $field, $settings ) {
@@ -2178,6 +2552,11 @@ PRIMARY KEY  (id)
 
 		}
 
+		/**
+		 * Renders the HTML for the visual editor setting.
+		 *
+		 * @param array $field The field properties.
+		 */
 		public function settings_visual_editor( $field ) {
 
 			$default_value = rgar( $field, 'value' ) ? rgar( $field, 'value' ) : rgar( $field, 'default_value' );
@@ -2190,6 +2569,9 @@ PRIMARY KEY  (id)
 			) );
 		}
 
+		/**
+		 * Renders the HTML for the routing setting.
+		 */
 		public function settings_routing() {
 			echo '<div id="gform_routing_setting" class="gravityflow-routing" data-field_name="_gaddon_setting_routing" data-field_id="routing" ></div>';
 			$field['name'] = 'routing';
@@ -2197,6 +2579,11 @@ PRIMARY KEY  (id)
 			$this->settings_hidden( $field );
 		}
 
+		/**
+		 * Renders the HTML for the user routing setting.
+		 *
+		 * @param array $field The field properties.
+		 */
 		public function settings_user_routing( $field ) {
 			$name = $field['name'];
 			$id = isset( $field['id'] ) ?  $field['id'] : 'gform_user_routing_setting_' . $name;
@@ -2206,6 +2593,11 @@ PRIMARY KEY  (id)
 			$this->settings_hidden( $field );
 		}
 
+		/**
+		 * Renders the HTML for the step selector setting.
+		 *
+		 * @param array $field The field properties.
+		 */
 		public function settings_step_selector( $field ) {
 			$form = $this->get_current_form();
 			$feed_id = $this->get_current_feed_id();
@@ -2234,6 +2626,11 @@ PRIMARY KEY  (id)
 			$this->settings_select( $step_selector_field );
 		}
 
+		/**
+		 * Renders the HTML for the editable fields setting.
+		 *
+		 * @param array $field The field properties.
+		 */
 		public function settings_editable_fields( $field ) {
 			$form = $this->get_current_form();
 			$choices = array();
@@ -2253,15 +2650,15 @@ PRIMARY KEY  (id)
 		/**
 		 * Adds columns to the list of feeds.
 		 *
-		 * setting name => label
+		 * Setting name => label.
 		 *
 		 * @return array
 		 */
 		public function feed_list_columns() {
 			$columns = array(
-				'step_name' => __( 'Step name', 'gravityflow' ),
+				'step_name'      => __( 'Step name', 'gravityflow' ),
 				'step_highlight' => '',
-				'step_type' => esc_html__( 'Step Type', 'gravityflow' ),
+				'step_type'      => esc_html__( 'Step Type', 'gravityflow' ),
 			);
 
 			$count_entries = apply_filters( 'gravityflow_entry_count_step_list', true );
@@ -2271,6 +2668,13 @@ PRIMARY KEY  (id)
 			return $columns;
 		}
 
+		/**
+		 * Returns the value to be displayed in the step type column of the feeds list.
+		 *
+		 * @param array $item The current feed.
+		 *
+		 * @return string
+		 */
 		public function get_column_value_step_type( $item ) {
 			$step       = $this->get_step( $item['id'] );
 			$step_label = empty( $step ) ? $item['meta']['step_type'] : $step->get_label();
@@ -2286,7 +2690,13 @@ PRIMARY KEY  (id)
 			return $icon_html . $step_label;
 		}
 
-
+		/**
+		 * Returns the value to be displayed in the entry count column of the feeds list.
+		 *
+		 * @param array $item The current feed.
+		 *
+		 * @return string
+		 */
 		public function get_column_value_entry_count( $item ) {
 			$count_entries = apply_filters( 'gravityflow_entry_count_step_list', true );
 			if ( ! $count_entries ) {
@@ -2303,11 +2713,11 @@ PRIMARY KEY  (id)
 		}
 
 		/**
-		 * Return value of step_highlight composite setting for display on feed list
+		 * Return value of step_highlight composite setting for display on feed list.
 		 *
 		 * @since 1.9.2
 		 *
-		 * @param array $item Current workflow step
+		 * @param array $item Current workflow step.
 		 *
 		 * @return string
 		 */
@@ -2337,11 +2747,34 @@ PRIMARY KEY  (id)
 			return $step_highlight;
 		}
 
+		/**
+		 * Returns the array of links to be displayed when mouseover a step.
+		 *
+		 * @return array
+		 */
+		public function get_action_links() {
+			$feed_id       = '_id_';
+			$edit_url      = add_query_arg( array( 'fid' => $feed_id ) );
+			$links         = array(
+				'edit'      => '<a title="' . esc_attr__( 'Edit this feed', 'gravityforms' ) . '" href="' . esc_url( $edit_url ) . '">' . esc_html__( 'Edit', 'gravityforms' ) . '</a>',
+				'duplicate' => '<a title="' . esc_attr__( 'Duplicate this feed', 'gravityforms' ) . '" href="#" onclick="gaddon.duplicateFeed(\'' . esc_js( $feed_id ) . '\');" onkeypress="gaddon.duplicateFeed(\'' . esc_js( $feed_id ) . '\');">' . esc_html__( 'Duplicate', 'gravityforms' ) . '</a>',
+				'delete'    => '<a title="' . esc_attr__( 'Delete this feed', 'gravityforms' ) . '" class="submitdelete" onclick="javascript: if(confirm(\'' . esc_js( __( 'WARNING: You are about to delete this item.', 'gravityforms' ) ) . esc_js( __( "'Cancel' to stop, 'OK' to delete.", 'gravityforms' ) ) . '\')){ gaddon.deleteFeed(\'' . esc_js( $feed_id ) . '\'); }" onkeypress="javascript: if(confirm(\'' . esc_js( __( 'WARNING: You are about to delete this item.', 'gravityforms' ) ) . esc_js( __( "'Cancel' to stop, 'OK' to delete.", 'gravityforms' ) ) . '\')){ gaddon.deleteFeed(\'' . esc_js( $feed_id ) . '\'); }" style="cursor:pointer;">' . esc_html__( 'Delete', 'gravityforms' ) . '</a>',
+				'step_id'   => 'Step ID# ' . $feed_id,
+			);
+
+			return $links;
+		}
+
+
+		/**
+		 * Returns the message to be displayed in the feeds list when no steps have been configured for the form.
+		 *
+		 * @return string
+		 */
 		public function feed_list_no_item_message() {
 			$url = add_query_arg( array( 'fid' => 0 ) );
 			return sprintf( __( "You don't have any steps configured. Let's go %screate one%s!", 'gravityflow' ), "<a href='" . esc_url( $url ) . "'>", '</a>' );
 		}
-
 
 		/**
 		 * Entry meta data is custom data that's stored and retrieved along with the entry object.
@@ -2361,9 +2794,8 @@ PRIMARY KEY  (id)
 		 * - (array) An array containing the configuration for the filter used on the results pages, the entry list search and export entries page.
 		 *           The array should contain one element: operators. e.g. 'operators' => array('is', 'isnot', '>', '<')
 		 *
-		 *
 		 * @param array $entry_meta An array of entry meta already registered with the gform_entry_meta filter.
-		 * @param int $form_id The Form ID
+		 * @param int   $form_id    The Form ID.
 		 *
 		 * @return array The filtered entry meta array.
 		 */
@@ -2394,7 +2826,7 @@ PRIMARY KEY  (id)
 				$entry_meta[ 'workflow_step_status_' . $step_id ] = array(
 					'label'             => __( 'Status:', 'gravityflow' ) . ' ' . $step_name,
 					'is_numeric'        => false,
-					'is_default_column' => false, // this column will not be displayed by default on the entry list
+					'is_default_column' => false, // This column will not be displayed by default on the entry list.
 					'filter'            => array(
 						'operators' => array( 'is', 'isnot' ),
 						'choices'   => $status_choices,
@@ -2421,7 +2853,7 @@ PRIMARY KEY  (id)
 					'text' => $this->translate_status_label( 'cancelled' ),
 				);
 
-				// Remove duplicates
+				// Remove duplicates.
 				$workflow_final_status_options = array_map( 'unserialize', array_unique( array_map( 'serialize', $workflow_final_status_options ) ) );
 
 				$workflow_final_status_options = array_values( $workflow_final_status_options );
@@ -2430,7 +2862,7 @@ PRIMARY KEY  (id)
 					'label'                      => 'Final Status',
 					'is_numeric'                 => false,
 					'update_entry_meta_callback' => array( $this, 'callback_update_entry_meta_workflow_final_status' ),
-					'is_default_column'          => true, // this column will be displayed by default on the entry list
+					'is_default_column'          => true, // This column will be displayed by default on the entry list.
 					'filter'                     => array(
 						'operators' => array( 'is', 'isnot' ),
 						'choices'   => $workflow_final_status_options,
@@ -2441,7 +2873,7 @@ PRIMARY KEY  (id)
 					'label'                      => 'Workflow Step',
 					'is_numeric'                 => false,
 					'update_entry_meta_callback' => array( $this, 'callback_update_entry_meta_workflow_step' ),
-					'is_default_column'          => true, // this column will be displayed by default on the entry list
+					'is_default_column'          => true, // This column will be displayed by default on the entry list.
 					'filter'                     => array(
 						'operators' => array( 'is', 'isnot' ),
 						'choices'   => $step_choices,
@@ -2452,7 +2884,7 @@ PRIMARY KEY  (id)
 					'label'                      => 'Timestamp',
 					'is_numeric'                 => true,
 					'update_entry_meta_callback' => array( $this, 'callback_update_entry_meta_timestamp' ),
-					'is_default_column'          => false, // this column will not be displayed by default on the entry list
+					'is_default_column'          => false, // This column will not be displayed by default on the entry list.
 				);
 			}
 
@@ -2462,9 +2894,9 @@ PRIMARY KEY  (id)
 		/**
 		 * The target of callback_update_entry_meta_workflow_step.
 		 *
-		 * @param string $key The entry meta key
-		 * @param array $entry The Entry Object
-		 * @param array $form The Form Object
+		 * @param string $key   The entry meta key.
+		 * @param array  $entry The Entry Object.
+		 * @param array  $form  The Form Object.
 		 *
 		 * @return string|void
 		 */
@@ -2488,9 +2920,9 @@ PRIMARY KEY  (id)
 		/**
 		 * The target of callback_update_entry_meta_workflow_current_status.
 		 *
-		 * @param string $key The entry meta key
-		 * @param array $entry The Entry Object
-		 * @param array $form The Form Object
+		 * @param string $key   The entry meta key.
+		 * @param array  $entry The Entry Object.
+		 * @param array  $form  The Form Object.
 		 *
 		 * @return string|void
 		 */
@@ -2510,9 +2942,9 @@ PRIMARY KEY  (id)
 		/**
 		 * The target of callback_update_entry_meta_workflow_final_status.
 		 *
-		 * @param string $key The entry meta key
-		 * @param array $entry The Entry Object
-		 * @param array $form The Form Object
+		 * @param string $key   The entry meta key.
+		 * @param array  $entry The Entry Object.
+		 * @param array  $form  The Form Object.
 		 *
 		 * @return string|void
 		 */
@@ -2532,9 +2964,9 @@ PRIMARY KEY  (id)
 		/**
 		 * The target of update_entry_meta_callback.
 		 *
-		 * @param string $key The entry meta key
-		 * @param array $entry The Entry Object
-		 * @param array $form The Form Object
+		 * @param string $key   The entry meta key.
+		 * @param array  $entry The Entry Object.
+		 * @param array  $form  The Form Object.
 		 *
 		 * @return string|void
 		 */
@@ -2545,7 +2977,14 @@ PRIMARY KEY  (id)
 			return ! isset( $entry['workflow_timestamp'] ) ? strtotime( $entry['date_created'] ) : time();
 		}
 
-
+		/**
+		 * Displays the workflow info on the entry detail page, if enabled.
+		 *
+		 * @param array                  $form         The current form.
+		 * @param array                  $entry        The current step.
+		 * @param null|Gravity_Flow_Step $current_step Null or the current step.
+		 * @param array                  $args         The page arguments.
+		 */
 		public function workflow_entry_detail_status_box( $form, $entry, $current_step = null, $args = array() ) {
 
 			if ( is_null( $current_step ) ) {
@@ -2554,28 +2993,45 @@ PRIMARY KEY  (id)
 
 			$display_workflow_info = (bool) $args['workflow_info'];
 
-			?>
-			<div id="gravityflow-status-box-container" class="postbox">
+			$step_status = (bool) $args['step_status'];
 
-				<h3 class="hndle" style="cursor:default;">
-					<span><?php if ( $display_workflow_info ) { echo esc_html( $this->translate_navigation_label( 'workflow' ) ); } ?></span>
-				</h3>
+			$current_user_is_assignee = false;
 
-				<div id="submitcomment" class="submitbox">
-					<div id="minor-publishing" class="gravityflow-status-box">
-						<?php
+			if ( $current_step && ! $display_workflow_info && ! $step_status ) {
+				$current_user_assignee_key = $current_step->get_current_assignee_key();
+				if ( $current_user_assignee_key ) {
+					$assignee                 = $current_step->get_assignee( $current_user_assignee_key );
+					$current_user_is_assignee = $assignee->is_current_user();
+				}
+			}
 
-						$this->maybe_display_entry_detail_workflow_info( $current_step, $form, $entry, $args );
-						$this->maybe_display_entry_detail_step_status( $current_step, $form, $entry, $args );
+			if ( $current_user_is_assignee || $display_workflow_info || ( $current_step && $step_status ) ) {
+				?>
+				<div id="gravityflow-status-box-container" class="postbox">
 
-						?>
+					<h3 class="hndle" style="cursor:default;">
+						<span><?php
+							if ( $display_workflow_info ) {
+								echo esc_html( $this->translate_navigation_label( 'workflow' ) );
+							}
+							?></span>
+					</h3>
+
+					<div id="submitcomment" class="submitbox">
+						<div id="minor-publishing" class="gravityflow-status-box">
+							<?php
+
+							$this->maybe_display_entry_detail_workflow_info( $current_step, $form, $entry, $args );
+							$this->maybe_display_entry_detail_step_status( $current_step, $form, $entry, $args );
+
+							?>
+						</div>
+
 					</div>
 
 				</div>
-
-			</div>
-
-			<?php
+				<?php
+			}
 
 			do_action( 'gravityflow_workflow_detail_sidebar', $form, $entry, $current_step, $args );
 
@@ -2586,9 +3042,9 @@ PRIMARY KEY  (id)
 		 * Displays the workflow info on the entry detail page, if enabled.
 		 *
 		 * @param Gravity_Flow_Step $current_step The current step for this entry.
-		 * @param array $form The form which created this entry.
-		 * @param array $entry The entry currently being displayed.
-		 * @param array $args The properties for the page currently being displayed.
+		 * @param array             $form         The form which created this entry.
+		 * @param array             $entry        The entry currently being displayed.
+		 * @param array             $args         The properties for the page currently being displayed.
 		 */
 		public function maybe_display_entry_detail_workflow_info( $current_step, $form, $entry, $args ) {
 			$display_workflow_info = (bool) $args['workflow_info'];
@@ -2604,13 +3060,21 @@ PRIMARY KEY  (id)
 				$entry_id_link = '<a href="' . admin_url( 'admin.php?page=gf_entries&view=entry&id=' . absint( $form['id'] ) . '&lid=' . absint( $entry['id'] ) ) . '">' . $entry_id . '</a>';
 			}
 
-			printf( '%s: %s<br/><br/>%s: %s', esc_html__( 'Entry ID', 'gravityflow' ), $entry_id_link, esc_html__( 'Submitted', 'gravityflow' ), esc_html( GFCommon::format_date( $entry['date_created'], true, 'Y/m/d' ) ) );
+			printf( '%s: %s<br/><br/>', esc_html__( 'Entry ID', 'gravityflow' ), $entry_id_link );
+
+			/**
+			 * Allows the format for dates within the entry detail workflow info box to be modified.
+			 *
+			 * @param string $date_format A date format string - defaults to 'Y/m/d'
+			 */
+			$date_format = apply_filters( 'gravityflow_date_format_entry_detail', 'Y/m/d' );
+			printf( '%s: %s', esc_html__( 'Submitted', 'gravityflow' ), esc_html( GFCommon::format_date( $entry['date_created'], true, $date_format ) ) );
 
 			if ( ! empty( $entry['workflow_timestamp'] ) ) {
 				$last_updated = date( 'Y-m-d H:i:s', $entry['workflow_timestamp'] );
 				if ( $entry['date_created'] != $last_updated ) {
 					echo '<br /><br />';
-					esc_html_e( 'Last updated', 'gravityflow' ); ?>: <?php echo esc_html( GFCommon::format_date( $last_updated, true, 'Y/m/d' ) );
+					esc_html_e( 'Last updated', 'gravityflow' ); ?>: <?php echo esc_html( GFCommon::format_date( $last_updated, true, $date_format ) );
 				}
 			}
 
@@ -2639,8 +3103,8 @@ PRIMARY KEY  (id)
 			/**
 			 * Allows content to be added in the workflow box below the workflow status info.
 			 *
-			 * @param array $form The form which created this entry.
-			 * @param array $entry The entry currently being displayed.
+			 * @param array             $form         The form which created this entry.
+			 * @param array             $entry        The entry currently being displayed.
 			 * @param Gravity_Flow_Step $current_step The current step for this entry.
 			 */
 			do_action( 'gravityflow_below_workflow_info_entry_detail', $form, $entry, $current_step );
@@ -2650,9 +3114,9 @@ PRIMARY KEY  (id)
 		 * Displays the step status on the entry detail page.
 		 *
 		 * @param Gravity_Flow_Step $current_step The current step for this entry.
-		 * @param array $form The form which created this entry.
-		 * @param array $entry The entry currently being displayed.
-		 * @param array $args The properties for the page currently being displayed.
+		 * @param array             $form         The form which created this entry.
+		 * @param array             $entry        The entry currently being displayed.
+		 * @param array             $args         The properties for the page currently being displayed.
 		 */
 		public function maybe_display_entry_detail_step_status( $current_step, $form, $entry, $args ) {
 			if ( false !== $current_step && $current_step instanceof Gravity_Flow_Step ) {
@@ -2704,8 +3168,8 @@ PRIMARY KEY  (id)
 		 * Display the details for the expired step.
 		 *
 		 * @param Gravity_Flow_Step $current_step The current step for this entry.
-		 * @param array $form The form which created this entry.
-		 * @param integer $entry_id The ID of the current entry.
+		 * @param array             $form         The form which created this entry.
+		 * @param integer           $entry_id     The ID of the current entry.
 		 */
 		public function display_expired_step_details( $current_step, $form, $entry_id ) {
 			$current_step->log_event( esc_html__( 'Step expired', 'gravityflow' ) );
@@ -2720,8 +3184,8 @@ PRIMARY KEY  (id)
 		 * Displays the admin actions drop down on the entry detail page, if applicable.
 		 *
 		 * @param Gravity_Flow_Step $current_step The current step for this entry.
-		 * @param array $form The form which created this entry.
-		 * @param array $entry The entry currently being displayed.
+		 * @param array             $form         The form which created this entry.
+		 * @param array             $entry        The entry currently being displayed.
 		 */
 		public function maybe_display_entry_detail_admin_actions( $current_step, $form, $entry ) {
 			$steps = $this->get_steps( $form['id'] );
@@ -2753,9 +3217,9 @@ PRIMARY KEY  (id)
 		 * Prepares a string containing the HTML options and optgroups for the admin actions drop down.
 		 *
 		 * @param bool|Gravity_Flow_Step $current_step The current step.
-		 * @param Gravity_Flow_Step[] $steps The steps for this form.
-		 * @param array $form The current form.
-		 * @param array $entry The current entry,
+		 * @param Gravity_Flow_Step[]    $steps        The steps for this form.
+		 * @param array                  $form         The current form.
+		 * @param array                  $entry        The current entry.
 		 *
 		 * @return string
 		 */
@@ -2781,7 +3245,7 @@ PRIMARY KEY  (id)
 				'value' => 'restart_workflow',
 			);
 
-			if ( $current_step && count( $steps ) > 1 ) {
+			if ( count( $steps ) > 1 ) {
 				$choices = array();
 				foreach ( $steps as $step ) {
 					if ( ! $step->is_active() ) {
@@ -2796,26 +3260,34 @@ PRIMARY KEY  (id)
 					}
 				}
 
-				$admin_actions[] = array(
-					'label'   => esc_html__( 'Send to step:', 'gravityflow' ),
-					'choices' => $choices,
-				);
+				if ( ! empty( $choices ) ) {
+					$admin_actions[] = array(
+						'label'   => esc_html__( 'Send to step:', 'gravityflow' ),
+						'choices' => $choices,
+					);
+				}
 			}
 
 			/**
 			 * Filter the choices which appear in the admin actions drop down.
 			 *
-			 * @param array $admin_actions Contains the properties for the options and optgroups.
-			 * @param bool|Gravity_Flow_Step $current_step The current step.
-			 * @param Gravity_Flow_Step[] $steps The steps for this form.
-			 * @param array $form The current form.
-			 * @param array $entry The current entry,
+			 * @param array                  $admin_actions Contains the properties for the options and optgroups.
+			 * @param bool|Gravity_Flow_Step $current_step  The current step.
+			 * @param Gravity_Flow_Step[]    $steps         The steps for this form.
+			 * @param array                  $form          The current form.
+			 * @param array                  $entry         The current entry,
 			 */
 			$admin_actions = apply_filters( 'gravityflow_admin_actions_workflow_detail', $admin_actions, $current_step, $steps, $form, $entry );
 
 			return $this->get_select_options( $admin_actions, '' );
 		}
 
+		/**
+		 * Displays the entry detail status box, if appropriate.
+		 *
+		 * @param array $form  The current form.
+		 * @param array $entry The current entry.
+		 */
 		public function entry_detail_status_box( $form, $entry ) {
 
 			if ( ! isset( $entry['workflow_final_status'] ) ) {
@@ -2847,6 +3319,14 @@ PRIMARY KEY  (id)
 			<?php
 		}
 
+		/**
+		 * Returns the current step object for the supplied form and entry.
+		 *
+		 * @param array $form  The current form.
+		 * @param array $entry The current entry.
+		 *
+		 * @return bool|Gravity_Flow_Step
+		 */
 		public function get_current_step( $form, $entry ) {
 
 			if ( ! isset( $entry['workflow_step'] ) ) {
@@ -2863,9 +3343,11 @@ PRIMARY KEY  (id)
 		}
 
 		/**
-		 * @param Gravity_Flow_Step $step
-		 * @param $entry
-		 * @param $form
+		 * Returns the next step for the supplied entry.
+		 *
+		 * @param Gravity_Flow_Step $step The current step.
+		 * @param array             $entry The current entry.
+		 * @param array             $form  The current form.
 		 *
 		 * @return bool|Gravity_Flow_Step
 		 */
@@ -2906,6 +3388,14 @@ PRIMARY KEY  (id)
 			return $step;
 		}
 
+		/**
+		 * Initializes and returns the step object for the supplied step id and optional entry.
+		 *
+		 * @param int        $step_id The step ID.
+		 * @param null|array $entry   Null or the current entry.
+		 *
+		 * @return bool|Gravity_Flow_Step
+		 */
 		public function get_step( $step_id, $entry = null ) {
 
 			$feed = $this->get_feed( $step_id );
@@ -2921,10 +3411,10 @@ PRIMARY KEY  (id)
 		/**
 		 * Returns the next step in the list. FALSE if there isn't a next step.
 		 *
-		 * @param array $form
-		 * @param Gravity_Flow_Step $current_step
-		 * @param array $entry
-		 * @param array $steps
+		 * @param array               $form         The current form.
+		 * @param Gravity_Flow_Step   $current_step The current step.
+		 * @param array               $entry        The current entry.
+		 * @param Gravity_Flow_Step[] $steps        The steps for the current form. Optional.
 		 *
 		 * @return bool|Gravity_Flow_Step
 		 */
@@ -2950,6 +3440,11 @@ PRIMARY KEY  (id)
 			return false;
 		}
 
+		/**
+		 * Returns an array of pages to appear in the app menu.
+		 *
+		 * @return array
+		 */
 		public function get_app_menu_items() {
 			$menu_items = array();
 
@@ -3010,9 +3505,12 @@ PRIMARY KEY  (id)
 			return $menu_items;
 		}
 
+		/**
+		 * Build left side options, always have app Settings first and Uninstall last, put extensions in the middle.
+		 *
+		 * @return array
+		 */
 		public function get_app_settings_tabs() {
-
-			//build left side options, always have app Settings first and Uninstall last, put extensions in the middle
 
 			$setting_tabs = array(
 				array(
@@ -3051,6 +3549,11 @@ PRIMARY KEY  (id)
 			return $setting_tabs;
 		}
 
+		/**
+		 * Returns the base64 encoded svg+xml icon to appear in the app menu.
+		 *
+		 * @return string
+		 */
 		public function get_app_menu_icon() {
 			$admin_icon = $this->get_admin_icon_b64();
 			return $admin_icon;
@@ -3170,6 +3673,9 @@ PRIMARY KEY  (id)
 			gravityflow_connected_apps()->settings_tab();
 		}
 
+		/**
+		 * Render the content for the tools page.
+		 */
 		public function app_tools_tab() {
 			$message = '';
 			$success = null;
@@ -3222,6 +3728,11 @@ PRIMARY KEY  (id)
 			<?php
 		}
 
+		/**
+		 * Get an array of form IDs selected for display on the submit page.
+		 *
+		 * @return array
+		 */
 		public function get_published_form_ids() {
 			$settings = $this->get_app_settings();
 
@@ -3251,6 +3762,11 @@ PRIMARY KEY  (id)
 			return $published_form_ids;
 		}
 
+		/**
+		 * Target for the load-workflow_page_gravityflow-status hook.
+		 *
+		 * Adds the screen options to the status page.
+		 */
 		public function load_screen_options() {
 
 			$screen = get_current_screen();
@@ -3270,10 +3786,20 @@ PRIMARY KEY  (id)
 
 		}
 
+		/**
+		 * Determines if the current location is the status page.
+		 *
+		 * @return bool
+		 */
 		public function is_status_page() {
 			return rgget( 'page' ) == 'gravityflow-status';
 		}
 
+		/**
+		 * Returns the settings to be displayed on the app settings page.
+		 *
+		 * @return array
+		 */
 		public function app_settings_fields() {
 
 			$forms = GFAPI::get_forms();
@@ -3415,6 +3941,14 @@ PRIMARY KEY  (id)
 
 		}
 
+		/**
+		 * Determines if the license is valid so the correct feedback icon can be displayed next to the setting.
+		 *
+		 * @param string $value The license key.
+		 * @param array  $field The field properties.
+		 *
+		 * @return bool|null
+		 */
 		public function license_feedback( $value, $field ) {
 
 			if ( empty( $value ) ) {
@@ -3434,6 +3968,13 @@ PRIMARY KEY  (id)
 
 		}
 
+		/**
+		 * Performs the remote request to check if the license key is activated, valid, and not expired.
+		 *
+		 * @param string $value The license key.
+		 *
+		 * @return array|object
+		 */
 		public function check_license( $value = '' ) {
 			if ( empty( $value ) ) {
 				$value = $this->get_app_setting( 'license_key' );
@@ -3444,11 +3985,17 @@ PRIMARY KEY  (id)
 			return json_decode( wp_remote_retrieve_body( $response ) );
 		}
 
+		/**
+		 * Deactivates the old license key and triggers activation of the new license key.
+		 *
+		 * @param array  $field         The license field properties.
+		 * @param string $field_setting The license key to be validated.
+		 */
 		public function license_validation( $field, $field_setting ) {
 			$old_license = $this->get_app_setting( 'license_key' );
 
 			if ( $old_license && $field_setting != $old_license ) {
-				// deactivate the old site
+				// Deactivate the old site.
 				$response = $this->perform_edd_license_request( 'deactivate_license', $old_license );
 				$this->log_debug( __METHOD__ . '() - response: ' . print_r( $response, 1 ) );
 			}
@@ -3462,6 +4009,13 @@ PRIMARY KEY  (id)
 
 		}
 
+		/**
+		 * Activates the license key for this site and clears the cached version info,
+		 *
+		 * @param string $license_key The license key to be activated.
+		 *
+		 * @return array|object
+		 */
 		public function activate_license( $license_key ) {
 			$response = $this->perform_edd_license_request( 'activate_license', $license_key );
 
@@ -3476,13 +4030,13 @@ PRIMARY KEY  (id)
 		 * Send a request to the EDD store url.
 		 *
 		 * @param string $edd_action The action to perform (check_license, activate_license or deactivate_license).
-		 * @param string $license The license key.
-		 * @param string $item_name The EDD item name. Defaults to the value of the GRAVITY_FLOW_EDD_ITEM_NAME constant.
+		 * @param string $license    The license key.
+		 * @param string $item_name  The EDD item name. Defaults to the value of the GRAVITY_FLOW_EDD_ITEM_NAME constant.
 		 *
 		 * @return array|WP_Error The response.
 		 */
 		public function perform_edd_license_request( $edd_action, $license, $item_name = GRAVITY_FLOW_EDD_ITEM_NAME ) {
-			// Prepare the request arguments
+			// Prepare the request arguments.
 			$args = array(
 				'timeout'   => 10,
 				'sslverify' => true,
@@ -3494,16 +4048,24 @@ PRIMARY KEY  (id)
 				),
 			);
 
-			// Send the remote request
+			// Send the remote request.
 			$response = wp_remote_post( GRAVITY_FLOW_EDD_STORE_URL, $args );
 
 			return $response;
 		}
 
+		/**
+		 * Displays the setting HTML.
+		 *
+		 * @param array $field The setting properties.
+		 */
 		public function settings_html( $field ) {
 			echo $field['html'];
 		}
 
+		/**
+		 * Triggers display of the submit page, if installation has been completed.
+		 */
 		public function submit() {
 
 			if ( $this->maybe_display_installation_wizard() ) {
@@ -3513,12 +4075,17 @@ PRIMARY KEY  (id)
 			$this->submit_page( true );
 		}
 
+		/**
+		 * Renders the submit page.
+		 *
+		 * @param bool $admin_ui Indicates if this is the admin page.
+		 */
 		public function submit_page( $admin_ui ) {
 			?>
 			<div class="wrap gf_entry_wrap gravityflow_workflow_wrap gravityflow_workflow_submit">
 				<?php if ( $admin_ui ) :	?>
 					<h2 class="gf_admin_page_title">
-						<img width="45" height="22" src="<?php echo esc_url( gravity_flow()->get_base_url() ); ?>/images/gravityflow-icon-blue-grad.svg" style="margin-right:5px;"/>
+						<img width="45" height="22" src="<?php echo esc_url( gravity_flow()->get_base_url() ); ?>/images/gravity-flow-icon-cropped.svg" style="margin-right:5px;"/>
 
 						<span><?php esc_html_e( 'Submit a Workflow Form', 'gravityflow' ); ?></span>
 
@@ -3542,6 +4109,11 @@ PRIMARY KEY  (id)
 			<?php
 		}
 
+		/**
+		 * Determines if the installation wizard should be displayed.
+		 *
+		 * @return bool
+		 */
 		public function maybe_display_installation_wizard() {
 
 			if ( is_multisite() || ! current_user_can( 'gform_full_access' ) ) {
@@ -3605,6 +4177,11 @@ PRIMARY KEY  (id)
 
 		}
 
+		/**
+		 * Renders the inbox page.
+		 *
+		 * @param array $args The inbox page arguments.
+		 */
 		public function inbox_page( $args = array() ) {
 
 			$defaults = array(
@@ -3660,7 +4237,23 @@ PRIMARY KEY  (id)
 							$api = new Gravity_Flow_API( $form_id );
 							$result = $api->cancel_workflow( $entry );
 							if ( $result ) {
-								esc_html_e( 'Workflow Cancelled', 'gravityflow' );
+								$feedback = esc_html__( 'Workflow Cancelled', 'gravityflow' );
+								/**
+								 * Allows the user feedback to be modified after cancelling the workflow with the cancel link.
+								 *
+								 * Return a sanitized string.
+								 *
+								 * @since 2.0.2
+								 *
+								 * @param string                $feedback   The sanitized feedback to send to the browser.
+								 * @param array                 $entry      The current entry array.
+								 * @param Gravity_Flow_Assignee $assignee   The assignee object.
+								 * @param string                $new_status The new status
+								 * @param array                 $form       The current form array.
+								 * @param Gravity_Flow_Step     $step       The current step
+								 */
+								$feedback = apply_filters( 'gravityflow_feedback_cancel_workflow', $feedback, $entry, $form, $step );
+								echo $feedback;
 							}
 							return;
 						}
@@ -3706,7 +4299,7 @@ PRIMARY KEY  (id)
 				} elseif ( $feedback ) {
 					GFCache::flush();
 
-					$entry = GFAPI::get_entry( $entry_id ); // refresh entry
+					$entry = GFAPI::get_entry( $entry_id ); // Refresh entry.
 
 					?>
 					<div class="gravityflow_workflow_notice updated notice notice-success is-dismissible" style="padding:6px;">
@@ -3732,7 +4325,7 @@ PRIMARY KEY  (id)
 				<div class="wrap gf_entry_wrap gravityflow_workflow_wrap gravityflow_workflow_detail">
 					<?php if ( $args['show_header'] ) :	?>
 						<h2 class="gf_admin_page_title">
-							<img width="45" height="22" src="<?php echo $this->get_base_url(); ?>/images/gravityflow-icon-blue-grad.svg" style="margin-right:5px;"/>
+							<img width="45" height="22" src="<?php echo $this->get_base_url(); ?>/images/gravity-flow-icon-cropped.svg" style="margin-right:5px;"/>
 							<span><?php esc_html_e( 'Workflow Inbox', 'gravityflow' ); ?></span>
 						</h2>
 
@@ -3751,8 +4344,9 @@ PRIMARY KEY  (id)
 			}
 		}
 
-
-
+		/**
+		 * Triggers display of the status page, if installation has been completed.
+		 */
 		public function status() {
 
 			if ( $this->maybe_display_installation_wizard() ) {
@@ -3762,6 +4356,11 @@ PRIMARY KEY  (id)
 			$this->status_page();
 		}
 
+		/**
+		 * Renders the status page.
+		 *
+		 * @param array $args The status page arguments.
+		 */
 		public function status_page( $args = array() ) {
 			$defaults = array(
 				'display_header' => true,
@@ -3772,7 +4371,7 @@ PRIMARY KEY  (id)
 
 				<?php if ( $args['display_header'] ) : ?>
 					<h2 class="gf_admin_page_title">
-						<img width="45" height="22" src="<?php echo esc_url( gravity_flow()->get_base_url() ); ?>/images/gravityflow-icon-blue-grad.svg" style="margin-right:5px;"/>
+						<img width="44px" height="22px" src="<?php echo esc_url( gravity_flow()->get_base_url() ); ?>/images/gravity-flow-icon-cropped.svg" style="margin-right:5px;"/>
 						<span><?php esc_html_e( 'Workflow Status', 'gravityflow' ); ?></span>
 					</h2>
 
@@ -3801,6 +4400,11 @@ PRIMARY KEY  (id)
 			$this->activity_page();
 		}
 
+		/**
+		 * Renders the activity page.
+		 *
+		 * @param array $args The activity page arguments.
+		 */
 		public function activity_page( $args = array() ) {
 			$defaults = array(
 				'display_header' => true,
@@ -3811,7 +4415,7 @@ PRIMARY KEY  (id)
 
 				<?php if ( $args['display_header'] ) : ?>
 					<h2 class="gf_admin_page_title">
-						<img width="45" height="22" src="<?php echo esc_url( gravity_flow()->get_base_url() ); ?>/images/gravityflow-icon-blue-grad.svg" style="margin-right:5px;"/>
+						<img width="45" height="22" src="<?php echo esc_url( gravity_flow()->get_base_url() ); ?>/images/gravity-flow-icon-cropped.svg" style="margin-right:5px;"/>
 
 						<span><?php esc_html_e( 'Workflow Activity', 'gravityflow' ); ?></span>
 
@@ -3842,6 +4446,11 @@ PRIMARY KEY  (id)
 			$this->reports_page();
 		}
 
+		/**
+		 * Renders the reports page.
+		 *
+		 * @param array $args The reports page arguments.
+		 */
 		public function reports_page( $args = array() ) {
 			$defaults = array(
 				'display_header' => true,
@@ -3852,7 +4461,7 @@ PRIMARY KEY  (id)
 
 				<?php if ( $args['display_header'] ) : ?>
 					<h2 class="gf_admin_page_title">
-						<img width="45" height="22" src="<?php echo esc_url( gravity_flow()->get_base_url() ); ?>/images/gravityflow-icon-blue-grad.svg" style="margin-right:5px;"/>
+						<img width="45" height="22" src="<?php echo esc_url( gravity_flow()->get_base_url() ); ?>/images/gravity-flow-icon-cropped.svg" style="margin-right:5px;"/>
 
 						<span><?php esc_html_e( 'Workflow Reports', 'gravityflow' ); ?></span>
 
@@ -3871,6 +4480,9 @@ PRIMARY KEY  (id)
 			<?php
 		}
 
+		/**
+		 * Renders the admin side toolbar.
+		 */
 		public function toolbar() {
 			?>
 
@@ -3889,6 +4501,11 @@ PRIMARY KEY  (id)
 			<?php
 		}
 
+		/**
+		 * Prepares an array of properties to be used by Gravity Forms when rendering the toolbar.
+		 *
+		 * @return array
+		 */
 		public function get_toolbar_menu_items() {
 			$menu_items = array();
 
@@ -3962,8 +4579,8 @@ PRIMARY KEY  (id)
 		/**
 		 * Processes the admin action from the entry detail page.
 		 *
-		 * @param $form
-		 * @param $entry
+		 * @param array $form The current form.
+		 * @param array $entry The current entry.
 		 *
 		 * @return bool|string|WP_Error Return a success feedback message safe for page output or a WP_Error instance with an error.
 		 */
@@ -4017,21 +4634,30 @@ PRIMARY KEY  (id)
 				/**
 				 * Allows the feedback for the admin action to be modified. Also allows custom admin actions to be processed.
 				 *
-				 * @param string $feedback A string with the feedback to be displayed to the user or an instance of WP_Error.
+				 * @param string $feedback     A string with the feedback to be displayed to the user or an instance of WP_Error.
 				 * @param string $admin_action The admin action.
-				 * @param array $form The form array.
-				 * @param array $entry The entry array.
+				 * @param array  $form         The form array.
+				 * @param array  $entry        The entry array.
 				 */
 				$feedback = apply_filters( 'gravityflow_admin_action_feedback', $feedback, $admin_action, $form, $entry );
 			}
 			return $feedback;
 		}
 
+		/**
+		 * Adds the workflow notification events, if the form has a workflow configured.
+		 *
+		 * @param array $events The notification events.
+		 * @param array $form   The current form.
+		 *
+		 * @return array
+		 */
 		public function add_notification_event( $events, $form ) {
 			if ( $this->has_feed( $form['id'] ) ) {
 				$events['workflow_approval']   = __( 'Workflow: approved or rejected', 'gravityflow' );
 				$events['workflow_user_input'] = __( 'Workflow: user input', 'gravityflow' );
 				$events['workflow_complete']   = __( 'Workflow: complete', 'gravityflow' );
+				$events['workflow_cancelled']  = __( 'Workflow: cancelled', 'gravityflow' );
 			}
 
 			return $events;
@@ -4041,7 +4667,7 @@ PRIMARY KEY  (id)
 		 * Checks the workflow steps to see if any feeds belonging to other add-ons need to be delayed.
 		 *
 		 * @param array $entry The entry created from the current form submission.
-		 * @param array $form The form object used to process the current submission.
+		 * @param array $form  The form object used to process the current submission.
 		 *
 		 * @return null
 		 */
@@ -4069,7 +4695,7 @@ PRIMARY KEY  (id)
 		 * Determines if the current submission requires a PayPal payment and if the workflow should be delayed.
 		 *
 		 * @param array $entry The entry created from the current form submission.
-		 * @param array $form The form object used to process the current submission.
+		 * @param array $form  The form object used to process the current submission.
 		 */
 		public function maybe_delay_workflow( $entry, $form ) {
 			$is_delayed = false;
@@ -4078,13 +4704,25 @@ PRIMARY KEY  (id)
 				$feed = gf_paypal()->get_single_submission_feed( $entry, $form );
 
 				if ( ! empty( $feed ) && $this->is_delayed( $feed ) && $this->has_paypal_payment( $feed, $form, $entry ) ) {
-					$this->log_debug( __METHOD__ . '() - processing delayed pending PayPal payment for entry id ' . $entry['id'] );
-					remove_action( 'gform_after_submission', array( $this, 'after_submission' ), 9 );
 					$is_delayed = true;
 				}
 			}
 
-			if ( ! $is_delayed ) {
+			/**
+			 * Allow processing of the workflow to be delayed.
+			 *
+			 * @since 2.0.2-dev
+			 *
+			 * @param bool  $is_delayed Indicates if processing of the workflow should be delayed.
+			 * @param array $entry      The current entry.
+			 * @param array $form       The current form.
+			 */
+			$is_delayed = apply_filters( 'gravityflow_is_delayed_pre_process_workflow', $is_delayed, $entry, $form );
+
+			if ( $is_delayed ) {
+				$this->log_debug( __METHOD__ . '() - processing delayed for entry id ' . $entry['id'] );
+				remove_action( 'gform_after_submission', array( $this, 'after_submission' ), 9 );
+			} else {
 				gform_update_meta( $entry['id'], "{$this->_slug}_is_fulfilled", true );
 			}
 		}
@@ -4092,10 +4730,10 @@ PRIMARY KEY  (id)
 		/**
 		 * Starts the workflow if it was delayed pending PayPal payment.
 		 *
-		 * @param array $entry The entry for which the PayPal payment has been completed.
-		 * @param array $paypal_config The PayPal feed used to process the entry.
+		 * @param array  $entry          The entry for which the PayPal payment has been completed.
+		 * @param array  $paypal_config  The PayPal feed used to process the entry.
 		 * @param string $transaction_id The PayPal transaction ID.
-		 * @param float $amount The transaction amount.
+		 * @param float  $amount         The transaction amount.
 		 *
 		 * @return void
 		 */
@@ -4107,6 +4745,13 @@ PRIMARY KEY  (id)
 			}
 		}
 
+		/**
+		 * Target for the gform_after_submission hook.
+		 * Triggers workflow processing on completion of the form submission.
+		 *
+		 * @param array $entry The current entry.
+		 * @param array $form  The current form.
+		 */
 		public function after_submission( $entry, $form ) {
 			if ( ! isset( $entry['id'] ) || $entry['status'] === 'spam' ) {
 				return;
@@ -4117,17 +4762,30 @@ PRIMARY KEY  (id)
 			}
 		}
 
+		/**
+		 * Target for the gform_after_update_entry hook.
+		 * Triggers workflow processing on entry update.
+		 *
+		 * @param array $form     The current form.
+		 * @param int   $entry_id The entry ID.
+		 */
 		public function filter_after_update_entry( $form, $entry_id ) {
 			$entry = GFAPI::get_entry( $entry_id );
-			if ( isset( $entry['workflow_final_status'] ) && $entry['workflow_final_status'] == 'pending' ) {
+			if ( ! is_wp_error( $entry ) && isset( $entry['workflow_final_status'] ) && $entry['workflow_final_status'] == 'pending' ) {
 				$this->process_workflow( $form, $entry_id );
 			}
 		}
 
+		/**
+		 * Starts or resumes workflow processing.
+		 *
+		 * @param array $form     The current form.
+		 * @param int   $entry_id The entry ID.
+		 */
 		public function process_workflow( $form, $entry_id ) {
 
 			$entry = GFAPI::get_entry( $entry_id );
-			if ( isset( $entry['workflow_step'] ) ) {
+			if ( ! is_wp_error( $entry ) && isset( $entry['workflow_step'] ) ) {
 
 				$this->log_debug( __METHOD__ . '() - processing. entry id ' . $entry_id );
 
@@ -4137,7 +4795,7 @@ PRIMARY KEY  (id)
 
 				if ( empty( $step_id ) && ( empty( $entry['workflow_final_status'] ) || $entry['workflow_final_status'] == 'pending') ) {
 					$this->log_debug( __METHOD__ . '() - not yet started workflow. starting.' );
-					// Starting workflow
+					// Starting workflow.
 					$form_id = absint( $form['id'] );
 					$step = $this->get_first_step( $form_id, $entry );
 					$this->log_event( 'workflow', 'started', $form['id'], $entry_id );
@@ -4164,10 +4822,13 @@ PRIMARY KEY  (id)
 
 					$this->log_debug( __METHOD__ . '() - getting next step.' );
 
-					$step = $this->get_next_step( $step, $entry, $form );
+					// Refresh the entry before getting the next step.
+					$entry         = GFAPI::get_entry( $entry_id );
+					$step          = $this->get_next_step( $step, $entry, $form );
 					$step_complete = false;
+
 					if ( $step ) {
-						$step_id = $step->get_id();
+						$step_id       = $step->get_id();
 						$step_complete = $step->start();
 						if ( $step_complete ) {
 							$step->end();
@@ -4202,6 +4863,14 @@ PRIMARY KEY  (id)
 			}
 		}
 
+		/**
+		 * Returns the first active step which meets its conditional logic (if configured).
+		 *
+		 * @param int   $form_id The current form ID.
+		 * @param array $entry   The current entry.
+		 *
+		 * @return bool|Gravity_Flow_Step
+		 */
 		public function get_first_step( $form_id, $entry ) {
 			$form  = GFAPI::get_form( $form_id );
 			$steps = $this->get_steps( $form_id, $entry );
@@ -4214,6 +4883,14 @@ PRIMARY KEY  (id)
 			return false;
 		}
 
+		/**
+		 * Adds the gravityflow shortcode.
+		 *
+		 * @param array       $atts    The shortcode attributes.
+		 * @param null|string $content The shortcode content.
+		 *
+		 * @return string|void
+		 */
 		public function shortcode( $atts, $content = null ) {
 
 			$a = $this->get_shortcode_atts( $atts );
@@ -4231,7 +4908,7 @@ PRIMARY KEY  (id)
 			}
 
 			if ( ! empty( $a['form'] ) && ! empty( $entry_id ) ) {
-				// Limited support for multiple shortcodes on the same page
+				// Limited support for multiple shortcodes on the same page.
 				$entry = GFAPI::get_entry( $entry_id );
 				if ( is_wp_error( $entry ) || $entry['form_id'] !== $a['form'] ) {
 					return;
@@ -4267,8 +4944,8 @@ PRIMARY KEY  (id)
 			/**
 			 * Allows the gravityflow shortcode to be modified and supports custom pages.
 			 *
-			 * @param string $html The HTML.
-			 * @param array $atts The original shortcode attributes.
+			 * @param string $html    The HTML.
+			 * @param array  $atts    The original shortcode attributes.
 			 * @param string $content The content inside the shortcode block.
 			 */
 			$html = apply_filters( 'gravityflow_shortcode_' . $a['page'], $html, $atts, $content );
@@ -4414,6 +5091,8 @@ PRIMARY KEY  (id)
 				'check_permissions' => $check_permissions,
 				'timeline'          => $a['timeline'],
 				'sidebar'           => $a['sidebar'],
+				'workflow_info'     => $a['workflow_info'],
+				'step_status'       => $a['step_status'],
 			);
 
 			$this->inbox_page( $args );
@@ -4486,8 +5165,9 @@ PRIMARY KEY  (id)
 		 * Checks if a particular user has a role.
 		 * Returns true if a match was found.
 		 *
-		 * @param string $role Role name.
-		 * @param int $user_id (Optional) The ID of a user. Defaults to the current user.
+		 * @param string $role    Role name.
+		 * @param int    $user_id (Optional) The ID of a user. Defaults to the current user.
+		 *
 		 * @return bool
 		 */
 		public function check_user_role( $role, $user_id = null ) {
@@ -4517,6 +5197,9 @@ PRIMARY KEY  (id)
 			return (array) $user->roles;
 		}
 
+		/**
+		 * Displays the support page.
+		 */
 		public function support() {
 			if ( $this->maybe_display_installation_wizard() ) {
 				return;
@@ -4526,6 +5209,9 @@ PRIMARY KEY  (id)
 			Gravity_Flow_Support::display();
 		}
 
+		/**
+		 * Renders the app settings page.
+		 */
 		public function app_tab_page() {
 			if ( $this->maybe_display_installation_wizard() ) {
 				return;
@@ -4553,10 +5239,20 @@ PRIMARY KEY  (id)
 			return $setting;
 		}
 
+		/**
+		 * Returns the currently saved plugin settings.
+		 *
+		 * @return array
+		 */
 		public function get_app_settings() {
 			return parent::get_app_settings();
 		}
 
+		/**
+		 * Updates the app settings with the provided settings.
+		 *
+		 * @param array $settings The settings to be saved.
+		 */
 		public function update_app_settings( $settings ) {
 			if ( $this->is_save_postback() ) {
 				$previous_settings = $this->get_previous_settings();
@@ -4575,9 +5271,9 @@ PRIMARY KEY  (id)
 		 *
 		 * @since 1.4.3-beta
 		 *
-		 * @param string $page The setting currently being processed; inbox_page, status_page, or submit_page.
-		 * @param array $settings The valid settings to be saved.
-		 * @param array $previous_settings The previous settings.
+		 * @param string $page              The setting currently being processed; inbox_page, status_page, or submit_page.
+		 * @param array  $settings          The valid settings to be saved.
+		 * @param array  $previous_settings The previous settings.
 		 */
 		public function maybe_update_page_content( $page, $settings, $previous_settings ) {
 			$new_setting = rgar( $settings, $page );
@@ -4601,6 +5297,16 @@ PRIMARY KEY  (id)
 			wp_update_post( $post );
 		}
 
+		/**
+		 * Target for the auto_update_plugin hook.
+		 *
+		 * Enables the plugin to update automatically, if enabled.
+		 *
+		 * @param bool   $update Whether to update.
+		 * @param object $item   The update offer.
+		 *
+		 * @return bool
+		 */
 		public function maybe_auto_update( $update, $item ) {
 			if ( isset( $item->slug ) && $item->slug == 'gravityflow' ) {
 
@@ -4631,10 +5337,15 @@ PRIMARY KEY  (id)
 			return $update;
 		}
 
+		/**
+		 * Determines if background automatic updates are disabled.
+		 *
+		 * Currently WordPress won't ask Gravity Flow to update if background updates are disabled.
+		 * Let's double check anyway.
+		 *
+		 * @return bool
+		 */
 		public function is_auto_update_disabled() {
-
-			// Currently WordPress won't ask Gravity Flow to update if background updates are disabled.
-			// Let's double check anyway.
 
 			// WordPress background updates are disabled if you don't want file changes.
 			if ( defined( 'DISALLOW_FILE_MODS' ) && DISALLOW_FILE_MODS ) {
@@ -4654,8 +5365,7 @@ PRIMARY KEY  (id)
 				return true;
 			}
 
-			// Now check Gravity Flow Background Update Settings
-
+			// Now check Gravity Flow Background Update Settings.
 			$enabled = $this->get_app_setting( 'background_updates' );
 			$this->log_debug( __METHOD__ . ' - $enabled: ' . var_export( $enabled, true ) );
 
@@ -4670,6 +5380,9 @@ PRIMARY KEY  (id)
 			return $disabled;
 		}
 
+		/**
+		 * Removes the settings from the database and clears the cron job.
+		 */
 		public function uninstall() {
 
 			require_once( $this->get_base_path() . '/includes/wizard/class-installation-wizard.php' );
@@ -4683,6 +5396,9 @@ PRIMARY KEY  (id)
 			parent::uninstall();
 		}
 
+		/**
+		 * Removes the activity table on uninstall.
+		 */
 		private function uninstall_db() {
 
 			global $wpdb;
@@ -4702,7 +5418,7 @@ PRIMARY KEY  (id)
 		public function add_timeline_note( $entry_id, $note, $user_id = false, $user_name = 'gravityflow' ) {
 			$assignee_key = $this->get_current_user_assignee_key();
 			if ( $assignee_key ) {
-				$assignee = new Gravity_Flow_Assignee( $assignee_key );
+				$assignee = Gravity_Flow_Assignees::create( $assignee_key );
 				if ( $assignee->get_type() === 'user_id' ) {
 					$user_id   = $assignee->get_id();
 					$user_name = $assignee->get_display_name();
@@ -4712,6 +5428,15 @@ PRIMARY KEY  (id)
 			GFFormsModel::add_note( $entry_id, $user_id, $user_name, $note, 'gravityflow' );
 		}
 
+		/**
+		 * Target for the gform_export_form hook.
+		 *
+		 * Adds the form feeds to form object before export.
+		 *
+		 * @param array $form The form to be exported.
+		 *
+		 * @return array
+		 */
 		public function filter_gform_export_form( $form ) {
 
 			$feeds = $this->get_feeds( $form['id'] );
@@ -4724,11 +5449,18 @@ PRIMARY KEY  (id)
 			return $form;
 		}
 
+		/**
+		 * Target for the gform_forms_post_import hook.
+		 *
+		 * Imports the feeds for the newly imported forms.
+		 *
+		 * @param array $forms The imported forms.
+		 */
 		public function action_gform_forms_post_import( $forms ) {
 			$gravityflow_feeds_imported = false;
 			foreach ( $forms as $import_form ) {
 
-				// Ensure the imported form is the latest. Compensates for a bug in Gravity Forms < 2.1.1.13
+				// Ensure the imported form is the latest. Compensates for a bug in Gravity Forms < 2.1.1.13.
 				$form = GFAPI::get_form( $import_form['id'] );
 
 				if ( isset( $form['feeds']['gravityflow'] ) ) {
@@ -4747,17 +5479,27 @@ PRIMARY KEY  (id)
 			}
 		}
 
+		/**
+		 * Target of the admin_enqueue_scripts hook.
+		 *
+		 * Triggers enqueuing of the form scripts for the workflow detail page.
+		 */
 		public function action_admin_enqueue_scripts() {
 			$this->maybe_enqueue_form_scripts();
 		}
 
-
+		/**
+		 * Triggers enqueuing of the form scripts for the workflow detail page.
+		 */
 		public function maybe_enqueue_form_scripts() {
 			if ( $this->is_workflow_detail_page() ) {
 				$this->enqueue_form_scripts();
 			}
 		}
 
+		/**
+		 * Enqueues the scripts for the current form.
+		 */
 		public function enqueue_form_scripts() {
 			$form = $this->get_current_form();
 
@@ -4777,17 +5519,27 @@ PRIMARY KEY  (id)
 			GFFormDisplay::enqueue_form_scripts( $form );
 		}
 
+		/**
+		 * Determines if the current location is the workflow detail page.
+		 *
+		 * @return bool
+		 */
 		public function is_workflow_detail_page() {
 			$id  = rgget( 'id' );
 			$lid = rgget( 'lid' );
 			return rgget( 'page' ) == 'gravityflow-inbox' && rgget( 'view' ) == 'entry' && ! empty( $id ) && ! empty( $lid );
 		}
 
+		/**
+		 * Returns an array of active form IDs which have workflows.
+		 *
+		 * @return array
+		 */
 		public function get_workflow_form_ids() {
 			if ( isset( $this->form_ids ) ) {
 				return $this->form_ids;
 			}
-			$forms = GFFormsModel::get_forms();
+			$forms = GFFormsModel::get_forms( true );
 			$form_ids = array();
 			foreach ( $forms as $form ) {
 				$form_id = absint( $form->id );
@@ -4800,8 +5552,18 @@ PRIMARY KEY  (id)
 			return $this->form_ids;
 		}
 
+		/**
+		 * Target for the gravityflow_cron filter.
+		 *
+		 * The cron job which will trigger processing of scheduled and expired steps, and reminder emails.
+		 */
 		public function cron() {
 			$this->log_debug( __METHOD__ . '() Starting cron.' );
+
+			if ( method_exists( 'GF_Upgrade', 'get_submissions_block' ) && gf_upgrade()->get_submissions_block() ) {
+				$this->log_debug( __METHOD__ . '(): submissions are blocked because an upgrade of Gravity Forms is in progress' );
+				return;
+			}
 
 			$this->maybe_process_queued_entries();
 			$this->maybe_process_expiration_and_reminders();
@@ -4809,6 +5571,9 @@ PRIMARY KEY  (id)
 			$this->log_debug( __METHOD__ . '() Finished cron.' );
 		}
 
+		/**
+		 * Triggers processing of scheduled steps.
+		 */
 		public function maybe_process_queued_entries() {
 
 			$this->log_debug( __METHOD__ . '(): starting' );
@@ -4844,8 +5609,20 @@ AND m.meta_value='queued'";
 
 			foreach ( $results as $result ) {
 				$form = GFAPI::get_form( $result->form_id );
+
+				if ( ! $form ) {
+					continue;
+				}
+
+				if ( ! $form['is_active'] ) {
+					continue;
+				}
+
 				$entry = GFAPI::get_entry( $result->id );
 				$step = $this->get_current_step( $form, $entry );
+				if ( $step && ! $step->is_active() ) {
+					continue;
+				}
 				if ( $step && $step->is_queued() ) {
 					$complete = $step->start();
 					if ( $complete ) {
@@ -4875,10 +5652,19 @@ AND m.meta_value='queued'";
 
 			foreach ( $form_ids as $form_id ) {
 				$form = GFAPI::get_form( $form_id );
+
+				if ( ! $form['is_active'] ) {
+					continue;
+				}
+
 				$steps = $this->get_steps( $form_id );
 				foreach ( $steps as $step ) {
 					if ( ! $step || ! $step instanceof Gravity_Flow_Step ) {
 						$this->log_debug( __METHOD__ . '(): step not a step!  ' . print_r( $step ) . ' - form ID: ' . $form_id );
+						continue;
+					}
+
+					if ( ! $step->is_active() ) {
 						continue;
 					}
 
@@ -4902,7 +5688,7 @@ AND m.meta_value='queued'";
 						'offset'    => 0,
 						'page_size' => 150,
 					);
-					// Criteria: step active
+					// Criteria: step active.
 					$entries = GFAPI::get_entries( $form_id, $criteria, null, $paging );
 
 					$this->log_debug( __METHOD__ . '(): count entries on step ' . $step->get_id() . ' = ' . count( $entries ) );
@@ -4928,7 +5714,7 @@ AND m.meta_value='queued'";
 
 							gravity_flow()->process_workflow( $form, $entry['id'] );
 
-							// Next entry
+							// Next entry.
 							continue;
 						}
 
@@ -4957,10 +5743,10 @@ AND m.meta_value='queued'";
 										 * Return zero to deactivate the repeat reminder.
 										 *
 										 * @param int                   $repeat_days The number of days between each reminder.
-										 * @param array                 $form
-										 * @param array                 $entry
-										 * @param Gravity_Flow_Step     $step
-										 * @param Gravity_Flow_Assignee $assignee
+										 * @param array                 $form        The current form.
+										 * @param array                 $entry       The current entry.
+										 * @param Gravity_Flow_Step     $step        The current step.
+										 * @param Gravity_Flow_Assignee $assignee    The current assignee.
 										 */
 										$repeat_days = apply_filters( 'gravityflow_assignee_email_reminder_repeat_days', $repeat_days, $form, $entry, $current_step, $assignee );
 										if ( $repeat_days > 0 ) {
@@ -4985,18 +5771,44 @@ AND m.meta_value='queued'";
 			}
 		}
 
+		/**
+		 * The app settings page title.
+		 *
+		 * @return string
+		 */
 		public function app_settings_title() {
 			return esc_html__( 'Gravity Flow Settings', 'gravityflow' );
 		}
 
+		/**
+		 * The message to be displayed before the uninstall button.
+		 *
+		 * @return string
+		 */
 		public function uninstall_warning_message() {
 			return sprintf( esc_html__( '%sThis operation deletes ALL Gravity Flow settings%s. If you continue, you will NOT be able to retrieve these settings.', 'gravityflow' ), '<strong>', '</strong>' );
 		}
 
+		/**
+		 * The message to be displayed when the uninstall button is clicked.
+		 *
+		 * @return string
+		 */
 		public function uninstall_confirm_message() {
 			return __( "Warning! ALL Gravity Flow settings will be deleted. This cannot be undone. 'OK' to delete, 'Cancel' to stop", 'gravityflow' );
 		}
 
+		/**
+		 * Target for the gravityflow_feed_actions filter.
+		 *
+		 * Removes the delete action when entries are on this step.
+		 *
+		 * @param array  $action_links The feed action links.
+		 * @param array  $item         The feed.
+		 * @param string $column       The column ID.
+		 *
+		 * @return array
+		 */
 		public function filter_feed_actions( $action_links, $item, $column ) {
 
 			if ( empty( $action_links ) ) {
@@ -5016,6 +5828,12 @@ AND m.meta_value='queued'";
 			return $action_links;
 		}
 
+		/**
+		 * Imports the feeds into the new form.
+		 *
+		 * @param array $original_feeds The original feeds.
+		 * @param int   $new_form_id    The new form ID.
+		 */
 		public function import_gravityflow_feeds( $original_feeds, $new_form_id ) {
 			$feed_id_mappings = array();
 
@@ -5035,10 +5853,12 @@ AND m.meta_value='queued'";
 				$step_ids_updated = false;
 				foreach ( $statuses_configs as $status_config ) {
 					$destination_key = 'destination_' . $status_config['status'];
-					$old_destination_step_id = $new_step_meta[ $destination_key ];
-					if ( ! in_array( $old_destination_step_id, array( 'next', 'complete' ) ) && isset( $feed_id_mappings[ $old_destination_step_id ] ) ) {
-						$new_step_meta[ $destination_key ] = $feed_id_mappings[ $old_destination_step_id ];
-						$step_ids_updated = true;
+					if ( isset( $new_step_meta[ $destination_key ] ) ) {
+						$old_destination_step_id = $new_step_meta[ $destination_key ];
+						if ( ! in_array( $old_destination_step_id, array( 'next', 'complete' ) ) && isset( $feed_id_mappings[ $old_destination_step_id ] ) ) {
+							$new_step_meta[ $destination_key ] = $feed_id_mappings[ $old_destination_step_id ];
+							$step_ids_updated = true;
+						}
 					}
 				}
 				if ( $new_step->get_type() == 'approval' ) {
@@ -5047,13 +5867,13 @@ AND m.meta_value='queued'";
 						$step_ids_updated = true;
 					}
 				}
-				// Change feed id in conditional logic
+				// Change feed id in conditional logic.
 				$is_condition_enabled = rgar( $new_step_meta, 'feed_condition_conditional_logic' ) == true;
 				$logic                = rgars( $new_step_meta, 'feed_condition_conditional_logic_object/conditionalLogic' );
 				if ( $is_condition_enabled && ! empty( $logic ) ) {
 					foreach ( $new_step_meta['feed_condition_conditional_logic_object']['conditionalLogic']['rules'] as $key => $rule ) {
 						if ( 0 === strpos( $rule['fieldId'], 'workflow_step_status_' ) ) {
-							$old_feed_id = explode( '_', $rule['fieldId'] ); // fieldId is in the format of "workflow_step_status_30"
+							$old_feed_id = explode( '_', $rule['fieldId'] ); // fieldId is in the format of "workflow_step_status_30".
 							$new_step_meta['feed_condition_conditional_logic_object']['conditionalLogic']['rules'][$key]['fieldId'] = 'workflow_step_status_' . $feed_id_mappings[$old_feed_id[3]];
 							$step_ids_updated = true;
 						}
@@ -5066,6 +5886,13 @@ AND m.meta_value='queued'";
 			}
 		}
 
+		/**
+		 * Target for the wp filter.
+		 *
+		 * Processes the access and approval step tokens.
+		 *
+		 * @return bool
+		 */
 		public function filter_wp() {
 
 			if ( isset( $_GET['gflow_access_token'] ) ) {
@@ -5136,18 +5963,28 @@ AND m.meta_value='queued'";
 			}
 		}
 
+		/**
+		 * Target for the the_content filter.
+		 *
+		 * Adds the assignee status feedback to the page content.
+		 *
+		 * @param string $content The page content.
+		 *
+		 * @return string
+		 */
 		public function custom_page_content( $content ) {
 			$content .= $this->_custom_page_content;
 			return $content;
 		}
 
-
 		/**
+		 * Generates the access token for the specified assignee.
+		 *
 		 * Loosely based on the JWT spec.
 		 *
-		 * @param Gravity_Flow_Assignee $assignee
-		 * @param array $scopes
-		 * @param string $expiration_timestamp
+		 * @param Gravity_Flow_Assignee $assignee             The current assignee.
+		 * @param array                 $scopes               The access token scopes.
+		 * @param string                $expiration_timestamp The expiration timestamp.
 		 *
 		 * @return string
 		 */
@@ -5196,6 +6033,13 @@ AND m.meta_value='queued'";
 			return $token;
 		}
 
+		/**
+		 * Validates the access token.
+		 *
+		 * @param bool|string $token The access token or false.
+		 *
+		 * @return bool
+		 */
 		public function validate_access_token( $token = false ) {
 
 			if ( empty( $token ) ) {
@@ -5282,6 +6126,11 @@ AND m.meta_value='queued'";
 			return true;
 		}
 
+		/**
+		 * Retrieves the access token from the query string or cookie.
+		 *
+		 * @return bool|string
+		 */
 		public function get_access_token() {
 			$token = false;
 			if ( empty( $token ) ) {
@@ -5295,6 +6144,14 @@ AND m.meta_value='queued'";
 			return $token;
 		}
 
+		/**
+		 * Decodes the access token.
+		 *
+		 * @param bool|string $token    The access token or false.
+		 * @param bool        $validate Indicates if the access token should be validated.
+		 *
+		 * @return array|bool
+		 */
 		public function decode_access_token( $token = false, $validate = true ) {
 			if ( empty( $token ) ) {
 				$token = $this->get_access_token();
@@ -5333,7 +6190,9 @@ AND m.meta_value='queued'";
 		}
 
 		/**
-		 * @param $token
+		 * Returns the assignee object for the current access token or false.
+		 *
+		 * @param string $token The assignee access token.
 		 *
 		 * @return bool|Gravity_Flow_Assignee
 		 */
@@ -5344,11 +6203,25 @@ AND m.meta_value='queued'";
 
 			$assignee_key = sanitize_text_field( $token['sub'] );
 
-			$assignee = new Gravity_Flow_Assignee( $assignee_key );
+			$assignee = Gravity_Flow_Assignees::create( $assignee_key );
 
 			return $assignee;
 		}
 
+		/**
+		 * Registers activity event in the activity log. The activity log is used to generate reports.
+		 *
+		 * @param string $log_type      The object of the event: 'workflow', 'step', 'assignee'.
+		 * @param string $event         The event which occurred: 'started', 'ended', 'status'.
+		 * @param int    $form_id       The form ID.
+		 * @param int    $entry_id      The Entry ID.
+		 * @param string $log_value     The value to log.
+		 * @param int    $step_id       The Step ID.
+		 * @param int    $duration      The duration in seconds - if applicable.
+		 * @param int    $assignee_id   The assignee ID - if applicable.
+		 * @param string $assignee_type The Assignee type - if applicable.
+		 * @param string $display_name  The display name of the User.
+		 */
 		public function log_event( $log_type, $event, $form_id = 0, $entry_id = 0, $log_value = '', $step_id = 0, $duration = 0, $assignee_id = 0, $assignee_type = '', $display_name = '' ) {
 			global $wpdb;
 			$wpdb->insert(
@@ -5382,11 +6255,23 @@ AND m.meta_value='queued'";
 			);
 		}
 
+		/**
+		 * Target for the wp_login hook.
+		 *
+		 * Stores the assignee access token in a cookie.
+		 */
 		public function filter_wp_login() {
 			unset( $_COOKIE['gflow_access_token'] );
 			setcookie( 'gflow_access_token', null, - 1, $this->get_cookie_path() );
 		}
 
+		/**
+		 * Format the duration for output.
+		 *
+		 * @param int $seconds The duration in seconds.
+		 *
+		 * @return string
+		 */
 		public function format_duration( $seconds ) {
 			if ( method_exists( 'DateTime', 'diff' ) ) {
 				$dtF           = new DateTime( '@0' );
@@ -5409,8 +6294,8 @@ AND m.meta_value='queued'";
 		/**
 		 * Adds the year, month and day intervals, if appropriate.
 		 *
-		 * @param array $interval
-		 * @param DateInterval $date_interval
+		 * @param array        $interval      The intervals.
+		 * @param DateInterval $date_interval The date interval object.
 		 *
 		 * @return array
 		 */
@@ -5434,8 +6319,8 @@ AND m.meta_value='queued'";
 		/**
 		 * Adds the hours, minutes and seconds intervals, if appropriate.
 		 *
-		 * @param array $interval
-		 * @param DateInterval $date_interval
+		 * @param array        $interval      The intervals.
+		 * @param DateInterval $date_interval The date interval object.
 		 *
 		 * @return array
 		 */
@@ -5458,6 +6343,13 @@ AND m.meta_value='queued'";
 			return $interval;
 		}
 
+		/**
+		 * Returns the base64 encoded svg+xml icon.
+		 *
+		 * @param bool $color Indicates if the icon should be in color.
+		 *
+		 * @return string
+		 */
 		public function get_admin_icon_b64( $color = false ) {
 
 			$svg_xml = '<?xml version="1.0" standalone="no"?>
@@ -5478,18 +6370,27 @@ AND m.meta_value='queued'";
 			return $icon;
 		}
 
-
+		/**
+		 * Target for the template_redirect hook.
+		 *
+		 * Hack to fix paging on the status shortcode.
+		 */
 		public function action_template_redirect() {
 			global $wp_query;
 			if ( isset( $wp_query->query_vars['paged'] ) && $wp_query->query_vars['paged'] > 0 ) {
 				if ( $this->look_for_shortcode() ) {
-					// Hack to fix paging on the status shortcode.
 					remove_filter( 'template_redirect', 'redirect_canonical' );
 				}
 			}
-
 		}
 
+		/**
+		 * Target for the cron_schedules filter. Add 15 minutes to the schedule.
+		 *
+		 * @param array $schedules An array of non-default cron schedules.
+		 *
+		 * @return array
+		 */
 		function filter_cron_schedule( $schedules ) {
 			$schedules['fifteen_minutes'] = array(
 				'interval' => 15 * MINUTE_IN_SECONDS,
@@ -5499,10 +6400,22 @@ AND m.meta_value='queued'";
 			return $schedules;
 		}
 
+		/**
+		 * Retrieves the setting for a specific field/input
+		 *
+		 * @param string     $setting_name  The field or input name.
+		 * @param string     $default_value Optional. The default value.
+		 * @param bool|array $settings      Optional. THe settings array.
+		 *
+		 * @return string|array
+		 */
 		public function get_setting( $setting_name, $default_value = '', $settings = false ) {
 			return parent::get_setting( $setting_name, $default_value, $settings );
 		}
 
+		/**
+		 * Processes the Ajax status export request.
+		 */
 		public function ajax_export_status() {
 			if ( ! wp_verify_nonce( rgget( 'gravityflow_export_nonce' ), 'gravityflow_export_nonce' ) || ! GFAPI::current_user_can_any( 'gravityflow_status' ) ) {
 				$response['status'] = 'error';
@@ -5522,6 +6435,11 @@ AND m.meta_value='queued'";
 			die();
 		}
 
+		/**
+		 * Target of the wp_ajax_gravityflow_download_export hook.
+		 *
+		 * Processes the Ajax export download request.
+		 */
 		public function ajax_download_export() {
 
 			if ( ! wp_verify_nonce( rgget( 'nonce' ), 'gravityflow_download_export' ) || ! GFAPI::current_user_can_any( 'gravityflow_status' ) ) {
@@ -5554,6 +6472,13 @@ AND m.meta_value='queued'";
 			die();
 		}
 
+		/**
+		 * Returns the display label for the specified navigation label key.
+		 *
+		 * @param string $label_key The navigation label key.
+		 *
+		 * @return string
+		 */
 		public function translate_navigation_label( $label_key ) {
 
 			$custom_labels = get_option( 'gravityflow_app_settings_labels', array() );
@@ -5574,18 +6499,30 @@ AND m.meta_value='queued'";
 			return empty( $label ) ?  $label_key :  $label;
 		}
 
+		/**
+		 * Returns the display labels for the navigation keys.
+		 *
+		 * @return array
+		 */
 		public function get_default_navigation_labels() {
 			return array(
 				'workflow' => esc_html__( 'Workflow', 'gravityflow' ),
-				'inbox' => esc_html__( 'Inbox', 'gravityflow' ),
-				'submit' => esc_html__( 'Submit', 'gravityflow' ),
-				'status' => esc_html__( 'Status', 'gravityflow' ),
-				'support' => esc_html__( 'Support', 'gravityflow' ),
-				'reports' => esc_html__( 'Reports', 'gravityflow' ),
+				'inbox'    => esc_html__( 'Inbox', 'gravityflow' ),
+				'submit'   => esc_html__( 'Submit', 'gravityflow' ),
+				'status'   => esc_html__( 'Status', 'gravityflow' ),
+				'support'  => esc_html__( 'Support', 'gravityflow' ),
+				'reports'  => esc_html__( 'Reports', 'gravityflow' ),
 				'activity' => esc_html__( 'Activity', 'gravityflow' ),
 			);
 		}
 
+		/**
+		 * Returns the display label for the supplied status.
+		 *
+		 * @param string $status The status.
+		 *
+		 * @return string
+		 */
 		public function translate_status_label( $status ) {
 			$original_status = $status;
 
@@ -5637,12 +6574,13 @@ AND m.meta_value='queued'";
 
 
 		/**
-		 * Hack to fix signature add-on in the front-end until GF_Field is implemented. The input name is rendered with the form ID in the front-end but editing is expected to be done in admin.
+		 * Hack to fix signature add-on in the front-end until GF_Field is implemented.
+		 *
+		 * The input name is rendered with the form ID in the front-end but editing is expected to be done in admin.
 		 */
 		public function maybe_save_signature() {
 
-			//see if this is an entry and it needs to be updated. abort if not
-
+			// See if this is an entry and it needs to be updated, abort if not.
 			if ( ! ( RG_CURRENT_VIEW == 'entry' && rgpost( 'save' ) == 'Update' ) ) {
 				return;
 			}
@@ -5650,7 +6588,7 @@ AND m.meta_value='queued'";
 			$lead_id = rgget( 'lid' );
 			$form    = RGFormsModel::get_form_meta( rgget( 'id' ) );
 			if ( empty( $lead_id ) ) {
-				//lid is not always in the querystring when paging through entries, use same logic from entry detail page
+				// The lid is not always in the querystring when paging through entries, use same logic from entry detail page.
 				$filter         = rgget( 'filter' );
 				$status         = in_array( $filter, array( 'trash', 'spam' ) ) ? $filter : 'active';
 				$search         = rgget( 's' );
@@ -5679,19 +6617,19 @@ AND m.meta_value='queued'";
 				}
 			}
 
-			//loop through form fields, get the field name of the signature field
+			// Loop through form fields, get the field name of the signature field.
 			foreach ( $form['fields'] as $field ) {
 				if ( RGFormsModel::get_input_type( $field ) == 'signature' ) {
-					//get field name so the value can be pulled from the post data
+					// Get field name so the value can be pulled from the post data.
 					$form_id = absint( $form['id'] );
 					$input_name = 'input_' . $form_id . '_' . str_replace( '.', '_', $field['id'] );
 
-					//when adding a new signature the data field will be populated
+					// When adding a new signature the data field will be populated.
 					if ( ! rgempty( "{$input_name}_data" ) ) {
-						//new image added, save
+						// New image added, save.
 						$filename = gf_signature()->save_signature( $input_name . '_data' );
 					} else {
-						//existing image edited
+						// Existing image edited.
 						$filename = rgpost( $input_name . '_signature_filename' );
 					}
 					$_POST[ "input_{$field['id']}" ] = $filename;
@@ -5702,11 +6640,11 @@ AND m.meta_value='queued'";
 		}
 
 		/**
-		 *  Hack until the Signature Add-On uses GF_Field
+		 * Hack until the Signature Add-On uses GF_Field
 		 *
-		 * @param $form
+		 * @param array $form The current form.
 		 *
-		 * @return mixed
+		 * @return array
 		 */
 		public function delete_signature_script( $form ) {
 			$form_id = absint( $form['id'] );
@@ -5738,10 +6676,25 @@ AND m.meta_value='queued'";
 			return $form;
 		}
 
+		/**
+		 * Allow feeds to duplicated.
+		 *
+		 * @param int|array $id The ID of the feed to be duplicated or the feed object when duplicating a form.
+		 *
+		 * @return bool
+		 */
 		public function can_duplicate_feed( $id ) {
 			return true;
 		}
 
+		/**
+		 * Target of the gform_post_form_duplicated hook.
+		 *
+		 * Triggers copying of the feeds from the original form to the duplicate.
+		 *
+		 * @param int $form_id The original form ID.
+		 * @param int $new_id  The duplicate form ID.
+		 */
 		public function post_form_duplicated( $form_id, $new_id ) {
 
 			$original_feeds = $this->get_feeds( $form_id );
@@ -5750,6 +6703,14 @@ AND m.meta_value='queued'";
 
 		}
 
+		/**
+		 * Target of the gform_post_add_entry hook.
+		 *
+		 * Starts the workflow for entries added via GFAPI::add_entry().
+		 *
+		 * @param array $entry The newly added entry.
+		 * @param array $form  The form for this entry.
+		 */
 		public function action_gform_post_add_entry( $entry, $form ) {
 			if ( is_wp_error( $entry ) || ! empty( $entry['partial_entry_id'] ) ) {
 				return;
@@ -5784,20 +6745,27 @@ AND m.meta_value='queued'";
 			return $assignee_key;
 		}
 
+		/**
+		 * Renders the display fields setting.
+		 */
 		public function settings_display_fields() {
 			$mode_field = array(
 				'name'     => 'display_fields_mode',
 				'label'    => '',
 				'type'     => 'select',
 				'default_value' => 'all_fields',
-				'onchange' => 'jQuery(this).siblings(".gravityflow_display_fields_selected_container").toggle(this.value=="selected_fields");',
+				'onchange' => 'jQuery(this).siblings(".gravityflow_display_fields_selected_container").toggle(this.value != "all_fields");',
 				'choices' => array(
 					array(
-						'label' => __( 'All fields', 'gravityflow' ),
+						'label' => __( 'Display all fields', 'gravityflow' ),
 						'value' => 'all_fields',
 					),
 					array(
-						'label' => __( 'Selected fields', 'gravityflow' ),
+						'label' => __( 'Display all fields except selected', 'gravityflow' ),
+						'value' => 'all_fields_except',
+					),
+					array(
+						'label' => __( 'Hide all fields except selected', 'gravityflow' ),
 						'value' => 'selected_fields',
 					),
 				),
@@ -5820,6 +6788,18 @@ AND m.meta_value='queued'";
 				$has_product_field = GFCommon::is_product_field( $field->type ) ? true : $has_product_field;
 			}
 
+			/**
+			 * Allow the display fields to be filtered
+			 *
+			 * @param array       $fields_as_choices The Gravity Forms fields to be shown in the Display Fields settings
+			 * @param array       $form              The current Gravity Forms object
+			 * @param array|false $feed              The current feed being processed. If $feed is false, use the $_POST data.
+			 *
+			 * @since 2.0.1
+			 */
+			$feed = $this->get_current_feed();
+			$fields_as_choices = apply_filters( 'gravityflow_display_field_choices', $fields_as_choices, $form, $feed );
+
 			$mode_value = $this->get_setting( 'display_fields_mode', 'all_fields' );
 
 			$multiselect_field = array(
@@ -5831,7 +6811,7 @@ AND m.meta_value='queued'";
 				'choices' => $fields_as_choices,
 			);
 			$this->settings_select( $mode_field );
-			$style = $mode_value == 'selected_fields' ? '' :  'style="display:none;"';
+			$style = $mode_value == 'all_fields' ? 'style="display:none;"' : '';
 			echo '<div class="gravityflow_display_fields_selected_container" ' . $style . '>';
 			$this->settings_select( $multiselect_field );
 			echo '</div>';
@@ -5858,45 +6838,45 @@ AND m.meta_value='queued'";
 		/**
 		 * Display or return the markup for the generic_map field type.
 		 *
-		 * @param array $field The field properties.
-		 * @param bool|true $echo Should the setting markup be echoed.
+		 * @param array     $field The field properties.
+		 * @param bool|true $echo  Should the setting markup be echoed.
 		 *
-		 * @return string|void
+		 * @return string
 		 */
 		public function settings_generic_map( $field, $echo = true ) {
 
 			$html = '';
 
-			// Support for dynamic field map migrations
+			// Support for dynamic field map migrations.
 			if ( isset( $field['field_map'] ) ) {
 				$field['key_choices'] = $field['field_map'];
 			}
 
 			$value_field = $key_field = $custom_key_field = $custom_value_field = $field;
 
-			/* Setup key field drop down */
+			// Setup key field drop down.
 			$key_field['choices'] = ( isset( $field['key_choices'] ) ) ? $field['key_choices'] : null;
-			$key_field['name'] .= '_key';
-			$key_field['class'] = 'key key_{i}';
-			$key_field['style'] = 'width:200px;';
+			$key_field['name']    .= '_key';
+			$key_field['class']   = 'key key_{i}';
+			$key_field['style']   = 'width:200px;';
 
-			/* Setup custom key text field */
-			$custom_key_field['name'] .= '_custom_key_{i}';
+			// Setup custom key text field.
+			$custom_key_field['name']  .= '_custom_key_{i}';
 			$custom_key_field['class'] = 'custom_key custom_key_{i}';
 			$custom_key_field['value'] = '{custom_key}';
 
-			/* Setup value field drop down */
+			// Setup value field drop down.
 			$value_field['choices'] = ( isset( $field['value_choices'] ) ) ? $field['value_choices'] : null;
-			$value_field['name'] .= '_custom_value';
-			$value_field['class'] = 'value value_{i}';
-			$value_field['style'] = 'width:200px;';
+			$value_field['name']    .= '_custom_value';
+			$value_field['class']   = 'value value_{i}';
+			$value_field['style']   = 'width:200px;';
 
-			/* Setup custom value text field */
-			$custom_value_field['name'] .= '_custom_value_{i}';
+			// Setup custom value text field.
+			$custom_value_field['name']  .= '_custom_value_{i}';
 			$custom_value_field['class'] = 'custom_value custom_value_{i}';
 			$custom_value_field['value'] = '{custom_value}';
 
-			/* Remove unneeded values */
+			// Remove unneeded values.
 			$unneeded_values = array( 'field_map', 'key_choices', 'value_choices', 'callback' );
 			foreach ( $unneeded_values as $unneeded_value ) {
 				unset( $field[ $unneeded_value ] );
@@ -5906,7 +6886,7 @@ AND m.meta_value='queued'";
 				unset( $custom_value_field[ $unneeded_value ] );
 			}
 
-			//add on errors set when validation fails
+			// Add on errors set when validation fails.
 			if ( $this->field_failed_validation( $field ) ) {
 				$html .= $this->get_error_icon( $field );
 			}
@@ -5926,10 +6906,10 @@ AND m.meta_value='queued'";
 		/**
 		 * Return the markup for the table containing the generic_map settings.
 		 *
-		 * @param array $field The generic_map field properties.
-		 * @param array $key_field The properties for the key field drop down.
-		 * @param array $custom_key_field The properties for the key field text input.
-		 * @param array $value_field The properties for the value field drop down.
+		 * @param array $field              The generic_map field properties.
+		 * @param array $key_field          The properties for the key field drop down.
+		 * @param array $custom_key_field   The properties for the key field text input.
+		 * @param array $value_field        The properties for the value field drop down.
 		 * @param array $custom_value_field The properties for the value field text input.
 		 *
 		 * @return string
@@ -5963,8 +6943,8 @@ AND m.meta_value='queued'";
 		/**
 		 * Return the inline script for the generic_map field.
 		 *
-		 * @param array $field The generic_map field properties.
-		 * @param string $key_field_name The name of the key field.
+		 * @param array  $field            The generic_map field properties.
+		 * @param string $key_field_name   The name of the key field.
 		 * @param string $value_field_name The name of the value field.
 		 *
 		 * @return string
@@ -5994,17 +6974,17 @@ AND m.meta_value='queued'";
 		/**
 		 * Prepares the markup for the generic_map key and value fields.
 		 *
-		 * @param string $type The field type being prepared; key or value.
-		 * @param array $select_field The drop down field properties.
-		 * @param array $text_field The text field properties.
+		 * @param string $type         The field type being prepared; key or value.
+		 * @param array  $select_field The drop down field properties.
+		 * @param array  $text_field   The text field properties.
 		 *
 		 * @return string
 		 */
 		public function get_generic_map_field( $type, $select_field, $text_field ) {
-			/* Build key cell based on available field map choices */
+			// Build key cell based on available field map choices.
 			if ( empty( $select_field['choices'] ) ) {
 
-				/* Set key field value to "gf_custom" so custom key is used. */
+				// Set key field value to "gf_custom" so custom key is used.
 				$select_field['value'] = 'gf_custom';
 
 				/* Build HTML string */
@@ -6017,7 +6997,7 @@ AND m.meta_value='queued'";
 
 			} else {
 
-				/* Ensure field map array has a custom key option. */
+				// Ensure field map array has a custom key option.
 				$has_gf_custom = false;
 				foreach ( $select_field['choices'] as $choice ) {
 					if ( $this->is_gf_custom_choice( $choice ) ) {
@@ -6036,7 +7016,7 @@ AND m.meta_value='queued'";
 					$select_field = $this->maybe_add_custom_choice( $select_field, $type );
 				}
 
-				/* Build HTML string */
+				// Build HTML string.
 				$html = sprintf(
 					'<th>%s<div class="custom-%s-container"><a href="#" class="custom-%s-reset">%s</a>%s</div></th>',
 					$this->settings_select( $select_field, false ),
@@ -6069,8 +7049,8 @@ AND m.meta_value='queued'";
 		/**
 		 * Adds the gf_custom choice to the field, if applicable.
 		 *
-		 * @param array $select_field The drop down field properties.
-		 * @param string $type The field type being prepared; key or value.
+		 * @param array  $select_field The drop down field properties.
+		 * @param string $type         The field type being prepared; key or value.
 		 *
 		 * @return array
 		 */
@@ -6174,6 +7154,10 @@ AND m.meta_value='queued'";
 						'operators' => array( 'is', 'isnot' ),
 						'choices'   => array(
 							array(
+								'text'  => esc_html__( 'Authorized', 'gravityflow' ),
+								'value' => 'Authorized',
+							),
+							array(
 								'text'  => esc_html__( 'Paid', 'gravityflow' ),
 								'value' => 'Paid',
 							),
@@ -6236,7 +7220,7 @@ AND m.meta_value='queued'";
 		 * @since 1.7.1-dev
 		 *
 		 * @param array $logic The conditional logic to be evaluated.
-		 * @param array $form The current form.
+		 * @param array $form  The current form.
 		 * @param array $entry The current entry.
 		 *
 		 * @return bool
@@ -6275,14 +7259,13 @@ AND m.meta_value='queued'";
 		/**
 		 * Target for the gform_pre_replace_merge_tags filter. Replaces the workflow_timeline and created_by merge tags.
 		 *
-		 *
-		 * @param string $text
-		 * @param array $form
-		 * @param array $entry
-		 * @param bool $url_encode
-		 * @param bool $esc_html
-		 * @param bool $nl2br
-		 * @param string $format
+		 * @param string $text       The text which may contain merge tags to be processed.
+		 * @param array  $form       The current form.
+		 * @param array  $entry      The current entry.
+		 * @param bool   $url_encode Indicates if the replacement value should be URL encoded.
+		 * @param bool   $esc_html   Indicates if HTML found in the replacement value should be escaped.
+		 * @param bool   $nl2br      Indicates if newlines should be converted to html <br> tags.
+		 * @param string $format     Determines how the value should be formatted. HTML or text.
 		 *
 		 * @return string
 		 */
@@ -6303,6 +7286,13 @@ AND m.meta_value='queued'";
 			return $text;
 		}
 
+		/**
+		 * Determines if any of the form fields have conditional logic configured.
+		 *
+		 * @param array $form The current form.
+		 *
+		 * @return bool
+		 */
 		public function fields_have_conditional_logic( $form ) {
 			$has_conditional_logic = false;
 			if ( isset( $form['fields'] ) && is_array( $form['fields'] ) ) {
@@ -6316,6 +7306,13 @@ AND m.meta_value='queued'";
 			return $has_conditional_logic;
 		}
 
+		/**
+		 * Determines if the form has any page fields with conditional logic.
+		 *
+		 * @param array $form The current form.
+		 *
+		 * @return bool
+		 */
 		public function pages_have_conditional_logic( $form ) {
 			$has_conditional_logic = false;
 			if ( isset( $form['fields'] ) && is_array( $form['fields'] ) ) {
@@ -6330,7 +7327,7 @@ AND m.meta_value='queued'";
 		}
 
 		/**
-		 * Returns the current form object based on the id query var. Otherwise returns false
+		 * Returns the current form object based on the id query var. Otherwise returns false.
 		 */
 		public function get_current_form() {
 
@@ -6375,8 +7372,8 @@ AND m.meta_value='queued'";
 		 *
 		 * @since 1.5.1-dev
 		 *
-		 * @param $field_filters
-		 * @param $post_id
+		 * @param array $field_filters The field filters used by GravityView.
+		 * @param int   $post_id       The post ID.
 		 *
 		 * @return array
 		 */
@@ -6405,7 +7402,7 @@ AND m.meta_value='queued'";
 
 				$workflow_assignees = array_merge( $workflow_assignees, $step_assignee_choices );
 			}
-			// Remove duplicate assignees
+			// Remove duplicate assignees.
 			$workflow_assignees = array_map( 'unserialize', array_unique( array_map( 'serialize', $workflow_assignees ) ) );
 			$workflow_assignees = array_values( $workflow_assignees );
 
@@ -6430,17 +7427,17 @@ AND m.meta_value='queued'";
 		 *
 		 * @since 1.5.1-dev
 		 *
-		 * @param $search_criteria
-		 * @param $form_ids
-		 * @param $view_id
+		 * @param array $search_criteria Search criteria used by GravityView.
+		 * @param array $form_ids        Forms to search.
+		 * @param int   $view_id         ID of the view being used to search.
 		 *
-		 * @return mixed
+		 * @return array
 		 */
 		public function filter_gravityview_search_criteria( $search_criteria, $form_ids, $view_id ) {
 			if ( isset( $search_criteria['search_criteria']['field_filters'] ) && is_array( $search_criteria['search_criteria']['field_filters'] ) ) {
 				$field_filters = $search_criteria['search_criteria']['field_filters'];
 				foreach ( $field_filters as &$field_filter ) {
-					if ( is_array( $field_filter ) && $field_filter['key'] == 'workflow_assignee' ) {
+					if ( is_array( $field_filter ) && isset( $field_filter['key'] ) && $field_filter['key'] == 'workflow_assignee' ) {
 						$assignee_key          = $field_filter['value'] == 'current_user' ? gravity_flow()->get_current_user_assignee_key() : $field_filter['value'];
 						$field_filter['key']   = 'workflow_' . str_replace( '|', '_', $assignee_key );
 						$field_filter['value'] = 'pending';
@@ -6459,8 +7456,8 @@ AND m.meta_value='queued'";
 		 *
 		 * @since 1.5.1-dev
 		 *
-		 * @param $check_entry_display
-		 * @param $entry
+		 * @param bool  $check_entry_display Check whether the entry is visible for the current View configuration. Default: true.
+		 * @param array $entry               The current entry.
 		 *
 		 * @return bool
 		 */
@@ -6495,7 +7492,7 @@ AND m.meta_value='queued'";
 
 			$entry = GVCommon::check_entry_display( $entry );
 
-			// Clean up the hack
+			// Clean up the hack.
 			foreach ( $keys as $key ) {
 				unset( $_fields[ $entry['form_id'] . '_' . $key ] );
 			}
@@ -6570,14 +7567,14 @@ AND m.meta_value='queued'";
 		 *
 		 * Fixes an issue in the add-on framework where tab links don't clean existing params.
 		 *
-		 * @param        $tabs
-		 * @param        $current_tab
-		 * @param        $title
-		 * @param string $message
+		 * @param array  $tabs        The app tabs.
+		 * @param string $current_tab The current tab name.
+		 * @param string $title       The page title.
+		 * @param string $message     The message to be displayed above the page title.
 		 */
 		public function app_tab_page_header( $tabs, $current_tab, $title, $message = '' ) {
 
-			// Print admin styles
+			// Print admin styles.
 			wp_print_styles( array( 'jquery-ui-styles', 'gform_admin' ) );
 
 			?>

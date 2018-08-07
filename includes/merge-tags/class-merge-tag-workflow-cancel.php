@@ -1,17 +1,29 @@
 <?php
+/**
+ * Gravity Flow Workflow Cancel Merge Tag
+ *
+ * @package     GravityFlow
+ * @copyright   Copyright (c) 2015-2018, Steven Henty S.L.
+ * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
+ */
 
 if ( ! class_exists( 'GFForms' ) ) {
 	die();
 }
 
-class Gravity_Flow_Merge_Tag_Workflow_Cancel extends Gravity_Flow_Merge_Tag_Workflow_Url {
+/**
+ * Class Gravity_Flow_Merge_Tag_Workflow_Cancel
+ *
+ * @since 1.7.1-dev
+ */
+class Gravity_Flow_Merge_Tag_Workflow_Cancel extends Gravity_Flow_Merge_Tag_Assignee_Base {
 
 	/**
 	 * The name of the merge tag.
 	 *
 	 * @since 1.7.1-dev
 	 *
-	 * @var null
+	 * @var string
 	 */
 	public $name = 'workflow_cancel';
 
@@ -47,17 +59,7 @@ class Gravity_Flow_Merge_Tag_Workflow_Cancel extends Gravity_Flow_Merge_Tag_Work
 				return $text;
 			}
 
-			$expiration_days      = apply_filters( 'gravityflow_cancel_token_expiration_days', 2, $this->assignee );
-			$expiration_str       = '+' . (int) $expiration_days . ' days';
-			$expiration_timestamp = strtotime( $expiration_str );
-
-			$scopes = array(
-				'pages'    => array( 'inbox' ),
-				'entry_id' => $this->step->get_entry_id(),
-				'action'   => 'cancel_workflow',
-			);
-
-			$cancel_token = gravity_flow()->generate_access_token( $this->assignee, $scopes, $expiration_timestamp );
+			$cancel_token = $this->get_token( 'cancel_workflow' );
 
 			foreach ( $matches as $match ) {
 				$full_tag       = $match[0];
@@ -82,6 +84,34 @@ class Gravity_Flow_Merge_Tag_Workflow_Cancel extends Gravity_Flow_Merge_Tag_Work
 		}
 
 		return $text;
+	}
+
+	/**
+	 * Get the number of days the token will remain valid for.
+	 *
+	 * @since 2.1.2-dev
+	 *
+	 * @return int
+	 */
+	protected function get_token_expiration_days() {
+		return apply_filters( 'gravityflow_cancel_token_expiration_days', 2, $this->assignee );
+	}
+
+	/**
+	 * Get the scopes to be used when generating the access token.
+	 *
+	 * @since 2.1.2-dev
+	 *
+	 * @param string $action The access token action.
+	 *
+	 * @return array
+	 */
+	protected function get_token_scopes( $action = '' ) {
+		return array(
+			'pages'           => array( 'inbox' ),
+			'entry_id'        => $this->step->get_entry_id(),
+			'action'          => $action,
+		);
 	}
 }
 

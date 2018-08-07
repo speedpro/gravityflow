@@ -1,21 +1,29 @@
 <?php
+/**
+ * Gravity Flow Workflow Approve Merge Tag
+ *
+ * @package     GravityFlow
+ * @copyright   Copyright (c) 2015-2018, Steven Henty S.L.
+ * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
+ */
 
 if ( ! class_exists( 'GFForms' ) ) {
 	die();
 }
 
-if ( ! class_exists( 'Gravity_Flow_Merge_Tag_Approve_Token' ) ) {
-	require_once( 'class-merge-tag-workflow-approve-token.php' );
-}
-
-class Gravity_Flow_Merge_Tag_Approve extends Gravity_Flow_Merge_Tag_Approve_Token {
+/**
+ * Class Gravity_Flow_Merge_Tag_Approve
+ *
+ * @since 1.7.1-dev
+ */
+class Gravity_Flow_Merge_Tag_Approve extends Gravity_Flow_Merge_Tag_Assignee_Base {
 
 	/**
 	 * The name of the merge tag.
 	 *
 	 * @since 1.7.1-dev
 	 *
-	 * @var null
+	 * @var string
 	 */
 	public $name = 'workflow_approve';
 
@@ -51,7 +59,7 @@ class Gravity_Flow_Merge_Tag_Approve extends Gravity_Flow_Merge_Tag_Approve_Toke
 				return $text;
 			}
 
-			$approve_token = $this->get_token();
+			$approve_token = $this->get_token( 'approve' );
 
 			if ( is_array( $matches ) ) {
 				foreach ( $matches as $match ) {

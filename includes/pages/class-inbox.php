@@ -1,21 +1,28 @@
 <?php
+/**
+ * Gravity Flow Inbox
+ *
+ * @package     GravityFlow
+ * @subpackage  Classes/Gravity_Flow_Inbox
+ * @copyright   Copyright (c) 2015-2018, Steven Henty S.L.
+ * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
+ * @since       1.0
+ */
 
 if ( ! class_exists( 'GFForms' ) ) {
 	die();
 }
 
 /**
- * Gravity Flow Inbox
- *
- *
- * @package     GravityFlow
- * @subpackage  Classes/Gravity_Flow_Inbox
- * @copyright   Copyright (c) 2015-2017, Steven Henty S.L.
- * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
- * @since       1.0
+ * Class Gravity_Flow_Inbox
  */
 class Gravity_Flow_Inbox {
 
+	/**
+	 * Displays the inbox page.
+	 *
+	 * @param array $args The inbox page arguments.
+	 */
 	public static function display( $args ) {
 
 		$args = array_merge( self::get_defaults(), $args );
@@ -127,8 +134,8 @@ class Gravity_Flow_Inbox {
 	/**
 	 * Get the entries to be displayed.
 	 *
-	 * @param array $args The inbox page arguments.
-	 * @param int $total_count The total number of entries.
+	 * @param array $args        The inbox page arguments.
+	 * @param int   $total_count The total number of entries.
 	 *
 	 * @return array
 	 */
@@ -161,6 +168,18 @@ class Gravity_Flow_Inbox {
 
 			$form_ids = $args['form_id'] ? $args['form_id'] : gravity_flow()->get_workflow_form_ids();
 
+			/**
+			 * Allows form id(s) to be adjusted to define which forms' entries are displayed in inbox table.
+			 *
+			 * Return an array of form ids for use with GFAPI.
+			 * 
+			 * @since 2.2.2-dev
+			 * 
+			 * @param array   $form_ids        The form ids
+			 * @param array   $search_criteria The search criteria
+			 */
+			$form_ids = apply_filters( 'gravityflow_form_ids_inbox', $form_ids, $search_criteria);
+
 			gravity_flow()->log_debug( __METHOD__ . '(): $form_ids => ' . print_r( $form_ids, 1 ) );
 			gravity_flow()->log_debug( __METHOD__ . '(): $search_criteria => ' . print_r( $search_criteria, 1 ) );
 
@@ -169,14 +188,33 @@ class Gravity_Flow_Inbox {
 					'page_size' => 150,
 				);
 
+				/**
+				 *
+				 * @since 2.0.2
+				 *
+				 * Allows the paging criteria to be modified before entries are searched for the inbox.
+				 *
+				 * @param array $paging The paging criteria.
+				 */
+				$paging = apply_filters( 'gravityflow_inbox_paging', $paging );
+
 				$sorting = array();
 
 				/**
 				 * Allows the sorting criteria to be modified before entries are searched for the inbox.
 				 *
-				 * @param array $entries
+				 * @param array $sorting The sorting criteria.
 				 */
 				$sorting = apply_filters( 'gravityflow_inbox_sorting', $sorting );
+
+				/**
+				 * Allows the search criteria to be modified before entries are searched for the inbox.
+				 *
+				 * @since 2.1
+				 *
+				 * @param array $sorting The search criteria.
+				 */
+				$search_criteria = apply_filters( 'gravityflow_inbox_search_criteria', $search_criteria );
 
 				$entries = GFAPI::get_entries( $form_ids, $search_criteria, $sorting, $paging, $total_count );
 			}
@@ -249,8 +287,8 @@ class Gravity_Flow_Inbox {
 	/**
 	 * Display the row for the current entry.
 	 *
-	 * @param array $args The inbox page arguments.
-	 * @param array $entry The entry currently being processed.
+	 * @param array $args    The inbox page arguments.
+	 * @param array $entry   The entry currently being processed.
 	 * @param array $columns The column properties.
 	 */
 	public static function display_entry_row( $args, $entry, $columns ) {
@@ -263,10 +301,10 @@ class Gravity_Flow_Inbox {
 		 *
 		 * @since 1.9.2
 		 *
-		 * @param string $link
-		 * @param string $url_entry
-		 * @param string $entry
-		 * @param string $args
+		 * @param string $link      The entry link HTML.
+		 * @param string $url_entry The entry URL.
+		 * @param string $entry     The current entry.
+		 * @param string $args      The inbox page arguments.
 		 */
 		$link = apply_filters( 'gravityflow_entry_link_inbox_table', $link, $url_entry, $entry, $args );
 
@@ -285,14 +323,15 @@ class Gravity_Flow_Inbox {
 				}
 			}
 		}
+
 		/**
 		 * Allow the Step Highlight colour to be overridden.
 		 *
 		 * @since 1.9.2
 		 *
-		 * @param string $highlight The highlight color (hex value) of the row currently being processed.
-		 * @param int $form['id'] The ID of form currently being processed.
-		 * @param array $entry The entry object for the row currently being processed.
+		 * @param string $highlight  The highlight color (hex value) of the row currently being processed.
+		 * @param int    $form['id'] The ID of form currently being processed.
+		 * @param array  $entry      The entry object for the row currently being processed.
 		 *
 		 * @return string
 		 */
@@ -318,10 +357,10 @@ class Gravity_Flow_Inbox {
 	/**
 	 * Get the value for display in the current column for the entry being processed.
 	 *
-	 * @param string $id The column id, the key to the value in the entry or form.
-	 * @param array $form The form object for the current entry.
-	 * @param array $entry The entry currently being processed for display.
-	 * @param array $columns The columns to be displayed.
+	 * @param string $id      The column id, the key to the value in the entry or form.
+	 * @param array  $form    The form object for the current entry.
+	 * @param array  $entry   The entry currently being processed for display.
+	 * @param array  $columns The columns to be displayed.
 	 *
 	 * @return string
 	 */
@@ -339,8 +378,8 @@ class Gravity_Flow_Inbox {
 				 * Allow the value displayed in the Submitter column to be overridden.
 				 *
 				 * @param string $submitter_name The display_name of the logged-in user who submitted the form or the guest ip address.
-				 * @param array $entry The entry object for the row currently being processed.
-				 * @param array $form The form object for the current entry.
+				 * @param array  $entry          The entry object for the row currently being processed.
+				 * @param array  $form           The form object for the current entry.
 				 */
 				$value = apply_filters( 'gravityflow_inbox_submitter_name', $submitter_name, $entry, $form );
 				break;
@@ -387,7 +426,7 @@ class Gravity_Flow_Inbox {
 	/**
 	 * Formats the actions for the action column.
 	 *
-	 * @param Gravity_Flow_Step $step
+	 * @param Gravity_Flow_Step $step The current step.
 	 *
 	 * @return string
 	 */
