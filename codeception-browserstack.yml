@@ -1,0 +1,127 @@
+actor: Tester
+params:
+    - env
+paths:
+    tests: tests/acceptance-tests
+    log: tests/acceptance-tests/_output
+    data: tests/acceptance-tests/_data
+    helpers: tests/acceptance-tests/_support
+settings:
+    bootstrap: _bootstrap.php
+    colors: true
+    memory_limit: 1024M
+modules:
+    config:
+        WPWebDriver:
+            host: '%BROWSERSTACK_USER%:%BROWSERSTACK_KEY%@hub-cloud.browserstack.com'
+            url: 'http://wordpress'
+            port: 4444
+            restart: true
+            wait: 60
+            adminUsername: admin
+            adminPassword: password
+            adminPath: /wp-admin
+            capabilities:
+              browserstack.local: true
+              browserstack.debug: true
+              browserstack.console: errors
+              browserstack.localIdentifier: 'gravityflow-%CIRCLE_NODE_INDEX%'
+        WPLoader:
+            wpRootFolder: /wp-core
+            dbName: wordpress
+            dbHost: mysql
+            dbUser: wordpress
+            dbPassword: wordpress
+            wpDebug: false
+            tablePrefix: wp_
+            domain: wordpress
+            plugins: ['gravityforms/gravityforms.php', 'gravityflow/gravityflow.php']
+            activatePlugins: ['gravityforms/gravityforms.php', 'gravityflow/gravityflow.php']
+
+env:
+  # OK
+  win-chrome:
+    modules:
+      config:
+        WPWebDriver:
+          browser: 'chrome'
+          capabilities:
+            os: Windows
+            os_version: 10
+  # Not OK
+  win-firefox:
+    modules:
+      config:
+        WPWebDriver:
+          browser: 'firefox'
+          capabilities:
+            os: Windows
+            os_version: 10
+
+  # Not OK - resetCookie crashes Edge
+  win-edge:
+    modules:
+      config:
+        WPWebDriver:
+          browser: 'Edge'
+          capabilities:
+            os: Windows
+            os_version: 10
+  # OK
+  win-ie:
+    modules:
+      config:
+        WPWebDriver:
+          browser: 'internet explorer'
+          capabilities:
+            os: Windows
+            os_version: 10
+            browserstack.ie.compatibility: 10001 # Version 11 run in protected mode for intranet domains.
+
+  # Not OK
+  mac-safari:
+    modules:
+      config:
+        WPWebDriver:
+          browser: 'Safari'
+          window_size: 'maximize'
+          capabilities:
+            os: 'OS X'
+            os_version: 'High Sierra'
+            browserstack.safari.allowAllCookies: true
+
+  # OK
+  mac-chrome:
+    modules:
+      config:
+        WPWebDriver:
+          browser: 'chrome'
+          capabilities:
+            os: 'OS X'
+            os_version: 'Mojave'
+
+  # NOT OK - flaky connections
+  ios:
+    modules:
+      config:
+        WPWebDriver:
+          browser: 'iPhone'
+          window_size: false
+          capabilities:
+            os: 'ios'
+            os_version: '12.0'
+            real_mobile: true
+  # OK
+  android:
+    modules:
+      config:
+        WPWebDriver:
+          browser: 'chrome'
+          window_size: false
+          capabilities:
+            device: 'Samsung Galaxy Note 8'
+            os: 'android'
+            os_version: '7.1'
+            real_mobile: true
+            unicode_keyboard: true
+            reset_keyboard: true

@@ -3,6 +3,9 @@
  * Purpose: Test total depending on quantity
  */
 
+// @group step-approval
+// @group step-user_input
+
 $I = new AcceptanceTester( $scenario );
 
 $I->wantTo( 'Test total depending on quantity' );
@@ -40,6 +43,7 @@ $I->seeElement( 'button[value=rejected]' );
 $I->click( 'button[value=rejected]' );
 
 // Change quantity
+$I->waitForElement( 'input[name="input_6"]', 3 );
 $I->seeElement( 'input[name="input_6"]' );
 $I->fillField( 'input[name="input_6"]', '2' );
 $I->click( 'Submit' );
@@ -48,4 +52,5 @@ $I->click( 'Submit' );
 $I->waitForText( '$44.00', 3 );
 $I->seeElement( 'button[value=approved]' );
 $I->click( 'button[value=approved]' );
+$I->waitForText( 'Entry Approved', 3 );
 $I->see( 'Entry Approved' );

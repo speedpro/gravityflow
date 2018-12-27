@@ -3,6 +3,10 @@
  * Purpose: Test the approval steps
  */
 
+// @group step-approval
+// @group step-user_input
+// @group step-notification
+
 $I = new AcceptanceTester( $scenario );
 
 $I->wantTo( 'Test the approval steps' );
@@ -17,7 +21,8 @@ $I->selectOption( 'select[name=input_2]', 'Third Choice' );
 $I->scrollTo( [ 'css' => 'input[type=submit]' ], 20, 50 ); // needed for chromedriver
 $I->click( 'Submit' );
 
-// trow number field error
+// Check number field error
+$I->waitForElement( 'div.validation_error', 3 );
 $I->seeElement( 'div.validation_error' );
 
 // fill number field with correct values
@@ -39,6 +44,7 @@ $I->waitForElement( 'button[value=approved]', 3 );
 $I->click( 'button[value=approved]' );
 
 // Send to CEO
+$I->waitForElement( 'select[name=gravityflow_admin_action]', 3 );
 $I->selectOption( 'select[name=gravityflow_admin_action]', 'CEO approval' );
 $I->click( 'Apply' );
 
@@ -47,3 +53,4 @@ $I->waitForElement( 'button[value=approved]', 3 );
 $I->click( 'button[value=approved]' );
 
 $I->waitForText( 'Status: Approved', 3 );
+$I->see( 'Status: Approved' );

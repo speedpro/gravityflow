@@ -58,10 +58,24 @@ class Gravity_Flow_Merge_Tag_Workflow_Url extends Gravity_Flow_Merge_Tag_Assigne
 				$options_string = isset( $match[4] ) ? $match[4] : '';
 
 				$a = $this->get_attributes( $options_string, array(
-					'page_id' => gravity_flow()->get_app_setting( 'inbox_page' ),
-					'text'    => $location == 'inbox' ? esc_html__( 'Inbox', 'gravityflow' ) : esc_html__( 'Entry', 'gravityflow' ),
-					'token'   => false,
+					'page_id'  => gravity_flow()->get_app_setting( 'inbox_page' ),
+					'text'     => $location == 'inbox' ? esc_html__( 'Inbox', 'gravityflow' ) : esc_html__( 'Entry', 'gravityflow' ),
+					'token'    => false,
+					'assignee' => '',
+					'step'     => '',
 				) );
+
+				$original_step = $this->step;
+
+				if ( ! empty( $a['step'] ) ) {
+					$this->step = gravity_flow()->get_step( $a['step'], $this->entry );
+				}
+
+				$original_assignee = $this->assignee;
+
+				if ( ! empty( $this->step ) && ! empty( $a['assignee'] ) ) {
+					$this->assignee = $this->step->get_assignee( $a['assignee'] );
+				}
 
 				$token = $this->get_workflow_url_access_token( $a );
 
@@ -78,6 +92,10 @@ class Gravity_Flow_Merge_Tag_Workflow_Url extends Gravity_Flow_Merge_Tag_Assigne
 				}
 
 				$text = str_replace( $full_tag, $url, $text );
+
+				$this->step = $original_step;
+
+				$this->assignee = $original_assignee;
 			}
 		}
 

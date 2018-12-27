@@ -2,9 +2,9 @@
 Contributors: stevehenty
 Tags: workflow, approvals, gravity forms
 Requires at least: 4.2
-Tested up to: 4.9.5
-License: GPL-3.0+
-License URI: http://www.gnu.org/licenses/gpl-3.0.html
+Tested up to: 4.9.8
+License: GPL-2.0+
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Add workflow processes to your Gravity Forms.
 
@@ -33,7 +33,7 @@ Twitter: [Gravity Flow](https://twitter.com/GravityFlow_io)
 
 1. [Purchase and install Gravity Forms](https://gravityflow.io/out/gravityforms)
 2. Wordpress 4.2+
-3. Gravity Forms 2.1+
+3. Gravity Forms 2.3+
 
 
 = Support =
@@ -55,6 +55,58 @@ Gravity Flow will work with any license of [Gravity Forms](https://gravityflow.i
 
 == ChangeLog ==
 
+= 2.4 =
+- Added approval step setting for notification on revert (only displays when revert setting for user input step is selected).
+- Added support for multiple Gravity PDFs to be sent with each email. Credit: The Team at Gravity PDF.
+- Added settings for the Email Service, default From Name, and default From Email.
+- Added support for Gravity Forms OAuth1 connected apps for use in the Outgoing Webhook step.
+- Added support for the Gravity Forms Advanced Post Creation Add-On.
+- Added support for Gravity Forms Repeater Fields.
+- Added the gform_order_summary filter enabling the GP eCommerce Fields Add-On to modify the location of discount and tax fields in the order summary table.
+- Fixed status page step column from display expires date/time when step also has schedule queued.
+- Fixed an issue where the file upload field appears to lose its value following progress save on the user input step.
+- Fixed gravityflow_is_fulfilled entry meta being set when there are no steps to process.
+- API: Added the entry filter step setting.
+- API: Added the Gravity_Flow_API::get_inbox_entries() and Gravity_Flow_API::get_inbox_entries_count() methods.
+
+= 2.3.3 =
+- Fixed an issue where delayed feeds are not delayed on Gravity Forms >2.3.4.2
+
+= 2.3.2 =
+- Added the gravityflow_step_expiration_timestamp filter.
+- Added the step merge tag attribute to allow merge tags to specify the step for which tokens must be generated. This allows feed add-ons to specify the step. For example, a Twilio or Slack message can contain a one-click approval link for the next step.
+- Updated the processing of the workflow to trigger before the confirmation is processed.
+- Updated the processing of user input step to skip required field validation when saving progress.
+- Updated the timeline date/time format to reflect format selected in WordPress general settings.
+- Updated Outgoing Webhook response mapping to parse merge tags in field keys.
+- Updated the Outgoing Webhook step settings to display merge tag dropdown with the URL field.
+- Updated the installation wizard to install Gravity Forms if it's not installed or update it if there's a newer version available.
+- Fixed an edge case where the assignee attribute will remove the assignee added in the constructor and override the assignee in subsequent instances of the merge tag.
+- Fixed an issue with the integrations with the Twilio Add-On where URLs get encoded breaking workflow links.
+- Fixed an issue with the evaluation of date field based step expiration when weeks is the selected offset unit.
+- Fixed a fatal error which can occur if Gravity PDF is activated on PHP < 5.6.
+- Fixed an issue where the "Workflow: user input" notification event is triggered before the entry has been updated which results in stale data being used when notification routing/conditional logic is evaluated and when merge tags in the notification settings are processed.
+
+= 2.3.1 =
+- Added support for deep parsing of the webhook response values. e.g. "translations\0\text"
+- Added the gravityflow_webhook_url_in_note filter to prevent the webhook URL from containing the URL. e.g. add_filter( 'gravityflow_webhook_url_in_note', '__return_false' );
+
+= 2.3 =
+- Added "Authorized" as an available choice for the entry Payment Status property in the step condition setting.
+- Added response field mapping for JSON values to the Outgoing Webhook step.
+- Added gravityflow_entry_webhook_response_mapping to allow the entry/response values to be adjusted during webhook response mapping.
+- Added gravityflow_columns_inbox_table to allow columns in inbox to be adjusted in similar fashion to status (gravityflow_columns_status_table)
+- Added gravityflow_date_format_current_step_merge_tag filter to allow the date/time-based modifiers for {current_step} adjust format: expiration, schedule, and start.
+- Added gravityflow_feed_condition_entry_properties filter to allow modifying entry properties in the feed condition.
+- Added admin notices when license keys are not valid.
+- Added support for tokens in Gravity Forms confirmations. Requires Gravity Forms 2.3.3.10.
+- Updated the Status Table Step Column to display the queued start time for a scheduled step and the expiration time for a step when set.
+- Updated the Entry Detail workflow info box display of step expiration date to use existing gravityflow_date_format_entry_detail filter.
+- Updated the step condition setting, inbox, and status pages to support custom payment statuses added by the gform_payment_statuses filter with Gravity Forms 2.4 and greater.
+- Fixed an issue with the Multi-User field on the entry detail pages where the ID is displayed instead of the user's name.
+- Fixed an issue with the File Upload field display the inbox shortcode page via fields attribute. The file icon/link was not displaying and generating PHP error.
+- Fixed RTL CSS in the inbox and entry detail page for Divi and other themes that don't fully support RTL.
+
 = 2.2.3 =
 - Added the "Workflow: cancelled" notification event for sending form notifications when the workflow is cancelled.
 - Added the merge_tag {current_step} with [modifiers] for duration (time), expiration (date/time), ID, name (default), schedule (date/time), start (date/time) and type.
@@ -66,8 +118,6 @@ Gravity Flow will work with any license of [Gravity Forms](https://gravityflow.i
 - Fixed some issues with RTL styles
 - Fixed some issues with styles on the Twenty Seventeen theme.
 - Fixed an issue with the status shortcode where the workflow_info and step_status attributes are ignored.
-
-
 
 = 2.2.2 =
 - Added the filter gravityflow_form_ids_inbox which allows adjustment of form id(s) when searching for entries for the inbox table.

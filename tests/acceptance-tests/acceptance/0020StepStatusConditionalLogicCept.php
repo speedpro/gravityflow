@@ -12,11 +12,14 @@
  * - Click on the 'Approve' button
  */
 
+// @group step-approval
+
 $I = new AcceptanceTester( $scenario );
 
 $I->loginAsAdmin();
 
 $I->amOnPage( '/step-status-conditional-logic' );
+$I->waitforText( 'Single Line',3 );
 $I->fillField( 'Single Line', 'test' );
 $I->fillField( 'Paragraph', 'test' );
 $I->selectOption( 'User', '1' );
@@ -24,9 +27,10 @@ $I->click( 'Submit' );
 
 
 $I->amOnWorkflowPage( 'Inbox' );
+$I->waitforText( 'Step Status Conditional Logic',3 );
 $I->click( 'Step Status Conditional Logic' );
 
-$I->waitforText( 'Approval Step' );
+$I->waitforText( 'Approval Step',3 );
 $I->see( 'Approval Step', '.gravityflow-status-box' );
 $I->click( 'Reject' );
 

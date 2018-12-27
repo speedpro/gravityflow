@@ -82,7 +82,7 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 			'fields' => array(
 				array(
 					'name'  => 'url',
-					'class' => 'large',
+					'class' => 'large merge-tag-support',
 					'label' => esc_html__( 'Outgoing Webhook URL', 'gravityflow' ),
 					'type'  => 'text',
 				),
@@ -275,7 +275,7 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 				);
 				$settings['fields'][] = array(
 					'name'                => 'mappings',
-					'label'               => esc_html__( 'Field Values', 'gravityflow' ),
+					'label'               => esc_html__( 'Request Field Values', 'gravityflow' ),
 					'type'                => 'generic_map',
 					'enable_custom_key'   => false,
 					'enable_custom_value' => true,
@@ -289,6 +289,44 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 					),
 				);
 			}
+		}
+
+		$settings['fields'][] = array(
+			'name'          => 'response_body',
+			'label'         => esc_html__( 'Response Mapping', 'gravityflow' ),
+			'type'          => 'radio',
+			'default_value' => '',
+			'horizontal'    => true,
+			'onchange'      => "jQuery(this).closest('form').submit();",
+			'tooltip'       => '<h6>' . esc_html__( 'Mapping', 'gravityflow' ) . '</h6>' . esc_html__( 'Whether to map selected values from the request response to the form entry.', 'gravityflow' ),
+			'choices'       => array(
+				array(
+					'label' => __( 'None', 'gravityflow' ),
+					'value' => '',
+				),
+				array(
+					'label' => __( 'Select Fields', 'gravityflow' ),
+					'value' => 'select_fields',
+				),
+			),
+		);
+
+		if ( in_array( $this->get_setting( 'response_body' ), array( 'select_fields' ) ) ) {
+			$settings['fields'][] = array(
+				'name'                => 'response_mappings',
+				'label'               => esc_html__( 'Response Field Values', 'gravityflow' ),
+				'type'                => 'generic_map',
+				'enable_custom_key'   => false,
+				'enable_custom_value' => true,
+				'key_field_title'     => esc_html__( 'Key', 'gravityflow' ),
+				'value_field_title'   => esc_html__( 'Field', 'gravityflow' ),
+				'value_choices'       => $this->value_mappings(),
+				'tooltip'             => '<h6>' . esc_html__( 'Response Mapping', 'gravityflow' ) . '</h6>' . esc_html__( 'Map selected field values from the request response to the form. Values from the response will be saved in the entry in the selected form.', 'gravityflow' ),
+				'dependency'          => array(
+					'field'  => 'response_body',
+					'values' => array( 'select_fields' ),
+				),
+			);
 		}
 
 		return $settings;
@@ -573,21 +611,26 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 				$headers = array();
 			}
 		}
+
 		if ( $this->authentication == 'connected_app' ) {
+
 			$app_id = $this->get_setting( 'connected_app' );
-			$connected_app      = gravityflow_connected_apps()->get_app( $app_id );
+
+			$connected_app = gravityflow_connected_apps()->get_app( $app_id );
+
 			if ( empty( $connected_app ) ) {
 				$this->log_debug( __METHOD__ . '() - Connected app not found: ' . $app_id );
 			}
-			$access_credentials = $connected_app['access_creds'];
+
+			$access_credentials = rgar( $connected_app, 'access_creds' );
 
 			require_once( dirname( __FILE__ ) . '/../class-oauth1-client.php' );
 			$this->oauth1_client = new Gravity_Flow_Oauth1_Client(
 				array(
 					'consumer_key'    => $connected_app['consumer_key'],
 					'consumer_secret' => $connected_app['consumer_secret'],
-					'token'           => $access_credentials['oauth_token'],
-					'token_secret'    => $access_credentials['oauth_token_secret'],
+					'token'           => rgar( $access_credentials, 'oauth_token' ),
+					'token_secret'    => rgar( $access_credentials, 'oauth_token_secret' ),
 				),
 				'gravi_flow_' . $connected_app['consumer_key'],
 				$this->get_setting( 'url' )
@@ -599,6 +642,7 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 				$this->oauth1_client->config['token']        = $access_credentials['oauth_token'];
 				$this->oauth1_client->config['token_secret'] = $access_credentials['oauth_token_secret'];
 			}
+
 			// Note we don't send the final $options[] parameter in here because our request is always sent in the body.
 			$headers['Authorization'] = $this->oauth1_client->get_full_request_header( $this->get_setting( 'url' ), $method );
 		}
@@ -624,6 +668,42 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 			$step_status = 'error';
 			$http_response_message = ' (WP Error)';
 		} else {
+
+			if ( $this->get_setting( 'response_body' ) == 'select_fields' ) {
+
+				$this->log_debug( __METHOD__ . '(): Attempting to map response data into $entry' );
+
+				if ( ! is_array( $this->response_mappings ) ) {
+					$this->log_debug( __METHOD__ . '(): Step has no response mappings defined' );
+					return;
+				}
+
+				$data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+				if ( ! is_array( $data ) ) {
+					$this->log_debug( __METHOD__ . '(): Response body does not include properly formatted JSON' );
+					return;
+				}
+
+				foreach ( $this->response_mappings as $mapping ) {
+					if ( rgblank( $mapping['key'] ) ) {
+						continue;
+					}
+
+					$entry = $this->add_mapping_to_entry( $entry, $mapping, $data, array( 'subtype' => 'json' ) );
+
+				}
+
+				$result = GFAPI::update_entry( $entry );
+
+				if ( is_wp_error( $result ) ) {
+					$this->log_debug( __METHOD__ . '(): There was an issue with updating the entry.' );
+				} else {
+					$this->log_debug( __METHOD__ . '(): Updated entry: ' . print_r( $entry, true ) );
+				}
+
+			}
+
 			if ( isset( $response['response']['code'] ) ) {
 				$http_response_code = intval( $response['response']['code'] );
 				switch ( true ) {
@@ -652,9 +732,9 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 		/**
 		 * Allow the step status to be modified on the webhook step.
 		 *
-		 * @param string              $step_status The step status derived from webhook response
+		 * @param string              $step_status The step status derived from webhook response.
 		 * @param array               $response    The response returned from webhook.
-		 * @param array               $args        The arguments used for executing the webhook request
+		 * @param array               $args        The arguments used for executing the webhook request.
 		 * @param array               $entry       The current entry.
 		 * @param Gravity_Flow_Step   $this        The current step.
 		 *
@@ -665,10 +745,10 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 		/**
 		 * Allow the message logged to the timeline following webhook step to be modified
 		 *
-		 * @param string              $http_response_message The status message derived from webhook response
-		 * @param string              $step_status           The step status derived from webhook response
+		 * @param string              $http_response_message The status message derived from webhook response.
+		 * @param string              $step_status           The step status derived from webhook response.
 		 * @param array               $response              The response returned from webhook.
-		 * @param array               $args                  The arguments used for executing the webhook request
+		 * @param array               $args                  The arguments used for executing the webhook request.
 		 * @param array               $entry                 The current entry.
 		 * @param Gravity_Flow_Step   $this                  The current step.
 		 *
@@ -677,17 +757,194 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 		$custom_response_message = apply_filters( 'gravityflow_response_message_webhook', $http_response_message, $step_status, $response, $args, $entry, $this );
 
 		if ( $custom_response_message == $http_response_message ) {
+
+			$show_url_in_note = true;
+
+			/**
+			 * Allows the URL to be hidden in the notes. Useful if API keys are in the URL params.
+			 *
+			 * @since 2.3.1
+			 *
+			 * @param bool $show_url_in_note
+			 */
+			$show_url_in_note = gf_apply_filters( array( 'gravityflow_webhook_url_in_note', $this->get_form_id() ), $show_url_in_note );
+
+			$url_in_note = $show_url_in_note ? sprintf( 'URL: %s.', $url ) : '';
+
 			/* Translators: 1st placeholders is URL provided by user in step settings, 2nd placeholder is response codes from webhook execution */
-			$this->add_note( sprintf( esc_html__( 'Webhook sent.  URL: %1$s.  RESPONSE: %2$s', 'gravityflow' ), $url, $http_response_message ) );
+			$this->add_note( sprintf( esc_html__( 'Webhook sent. %1$s RESPONSE: %2$s', 'gravityflow' ), $url_in_note, $http_response_message ) );
+
 			$this->log_debug( __METHOD__ . '() - result: ' . $http_response_message );
 		} else {
+
 			$this->add_note( esc_html( $custom_response_message ) );
+
 			$this->log_debug( __METHOD__ . '() - result: ' . $custom_response_message );
 		}
 
 		do_action( 'gravityflow_post_webhook', $response, $args, $entry, $this );
 
 		return $step_status;
+	}
+
+	/**
+	 * Add the mapped value of the response to the entry.
+	 *
+	 * @since 2.2.4-dev
+	 *
+	 * @param array $entry        The entry to update.
+	 * @param array $mapping      The properties for the mapping being processed.
+	 * @param array $data         The response params.
+	 * @param array $content_type The content type of incoming request.
+	 *
+	 * @return array
+	 */
+	public function add_mapping_to_entry( $entry, $mapping, $data, $content_type ) {
+
+		$skip_mapping = false;
+
+		$source_field_id = trim( $mapping['custom_key'] );
+
+		$target_field_id = (string) $mapping['value'];
+
+		$value = $this->parse_response_value( $data, $source_field_id );
+
+		if ( is_wp_error( $value ) ) {
+			$this->log_debug( $value->get_error_message() );
+			return $entry;
+		}
+
+		$form = $this->get_form();
+
+		$target_field = GFFormsModel::get_field( $form, $target_field_id );
+
+		if ( $target_field instanceof GF_Field ) {
+
+			if ( in_array( $target_field->type, array( 'fileupload', 'post_title', 'post_content', 'post_excerpt', 'post_tags', 'post_category', 'post_image', 'post_custom_field', 'product', 'singleproduct', 'quantity', 'option', 'shipping', 'singleshipping', 'total' ) ) ) {
+				$skip_mapping = true;
+			} else {
+				$this->log_debug( __METHOD__ . '(): Mapping into Field #' . $target_field->id . ' / Type: ' . $target_field->type );
+
+				$is_full_target      = $target_field_id === (string) intval( $target_field_id );
+				$target_field_inputs = $target_field->get_entry_inputs();
+
+				// Non-Choice Field Type.
+				if ( $is_full_target && ! is_array( $target_field_inputs ) ) {
+
+					if ( rgar( $content_type, 'subtype' ) == 'json' && in_array( $target_field->type, array( 'multiselect', 'workflow_multi_user' ) ) ) {
+
+						if ( ! is_array( $value ) ) {
+							$value = json_decode( $value );
+						}
+
+						$entry[ $target_field_id ] = $target_field->get_value_save_entry( $value, $form, false, $entry['id'], $entry );
+
+					} elseif ( in_array( $target_field->type, array( 'workflow_discussion' ) ) ) {
+						$entry[ $target_field_id ] = $target_field->get_value_save_entry( $value, $form, false, $entry['id'], $entry );
+					} else {
+						$entry[ $target_field_id ] = $target_field->sanitize_entry_value( $value, $form['id'] );
+					}
+
+					// Choice Field Types.
+				} elseif ( is_array( $target_field_inputs ) ) {
+
+					// Received Parent Input ID.
+					if ( $target_field_id == $target_field['id'] ) {
+
+						if ( is_array( $value ) ) {
+							$choices = $value;
+						} else {
+							$choices = json_decode( $value, true );
+						}
+
+						foreach ( $choices as $source_field ) {
+
+							$entry[ $source_field['id'] ] = $target_field->sanitize_entry_value( $source_field['value'], $form['id'] );
+						}
+
+						// Received Direct Input ID.
+					} else {
+						foreach ( $target_field_inputs as $input ) {
+							if ( $target_field_id === $input['id'] ) {
+								$entry[ $target_field_id ] = $target_field->sanitize_entry_value( $value, $form['id'] );
+								break;
+							}
+						}
+					}
+				} else {
+					$skip_mapping = true;
+				}
+			}
+		} elseif ( $target_field_id == 'gf_custom' ) {
+			$this->log_debug( __METHOD__ . '(): Mapping into gf_custom' );
+			$entry[ $target_field_id ] = GFCommon::replace_variables( $value, $form, $entry, false, true, false, 'text' );
+		} else {
+			$skip_mapping = true;
+		}
+
+		if ( $skip_mapping ) {
+			if ( is_object( $target_field ) ) {
+				$this->log_debug( __METHOD__ . '(): Field Type ' . $target_field->type . ' - Not available for import yet.' );
+			} else {
+				$this->log_debug( __METHOD__ . '(): Incoming field mapping error.' );
+			}
+		}
+
+		/**
+		 * Allow the entry to be modified during the response mapping of the webhook step.
+		 *
+		 * @since 2.2.4-dev
+		 *
+		 * @param array               $entry        The entry
+		 * @param array               $mapping      The response field mappings for outgoing webhook step.
+		 * @param array               $data         The response data
+		 * @param Gravity_Flow_Step   $this         The current step.
+		 *
+		 * @return array
+		 */
+		$entry = apply_filters( 'gravityflow_entry_webhook_response_mapping', $entry, $mapping, $data, $this );
+
+		return $entry;
+	}
+
+	/**
+	 * Parses the response value. Uses the backslash to drill down into arrays.
+	 *
+	 * @since 2.3.1
+	 *
+	 * @param array  $value     The response values.
+	 * @param string $key       The key used to lookup the value.
+	 * @param string $default   The defaeult return value.
+	 *
+	 * @return array|string|WP_Error
+	 */
+	public function parse_response_value( $value, $key, $default = '' ) {
+
+		if ( ! is_array( $value ) && ! ( is_object( $value ) && $value instanceof ArrayAccess ) ) {
+			return $default;
+		}
+
+		/* translators: %s is the key used to lookup the value in the REST API response */
+		$error_message = sprintf( __( 'The key %s does not match any element in the response.', 'gravityflow' ), $key ) ;
+
+		$this->log_debug( __METHOD__ . '() - key before replacing variables: ' . $key );
+		$key = GFCommon::replace_variables( $key, $this->get_form(), $this->get_entry(), true, false, false, 'text' );
+		$this->log_debug( __METHOD__ . '() - key after replacing variables: ' . $key );
+
+		if ( strpos( $key, '\\' ) === false ) {
+			return isset( $value[ $key ] ) ? $value[ $key ] : new WP_Error( 'invalid_key', $error_message );
+		}
+
+		$names = explode( '\\', $key );
+		if ( $names === false ) {
+			return new WP_Error( 'invalid_key_parsing', $error_message );
+		}
+		$val = $value;
+		foreach ( $names as $current_name ) {
+			$val = rgar( $val, $current_name, $default );
+		}
+
+		return $val;
 	}
 
 	/**

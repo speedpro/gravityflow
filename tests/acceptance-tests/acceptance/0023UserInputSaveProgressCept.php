@@ -3,6 +3,9 @@
  * Purpose: Test the save progress types
  */
 
+// @group merge-tags
+// @group step-user_input
+
 $I = new AcceptanceTester( $scenario );
 
 $I->wantTo( 'Test the save progress types for user input step' );
@@ -33,7 +36,7 @@ $I->click( '#gravityflow_save_progress_button' );
 $I->waitForText( 'Entry updated - in progress.' );
 $I->see( 'Entry updated - in progress.' );
 $I->click( '#gravityflow_submit_button' );
-$I->waitForText( 'Entry updated and marked complete.' );
+$I->waitForText( 'Entry updated and marked complete.', 10 );
 $I->see( 'Entry updated and marked complete.' );
 
 // Test - Radio Buttons - In Progress
@@ -41,11 +44,12 @@ $I->waitForText( 'Save Progress - Radio Buttons - In Progress Default (Pending I
 $I->see( 'Save Progress - Radio Buttons - In Progress Default (Pending Input)' );
 $I->seeOptionIsSelected( 'input[name=gravityflow_status]', 'in_progress' );
 $I->click( '#gravityflow_update_button' );
-$I->waitForText( 'Entry updated - in progress.' );
+$I->waitForText( 'Entry updated - in progress.', 10 );
 $I->see( 'Entry updated - in progress.' );
 $I->click( 'input#gravityflow_complete' );
+$I->waitForElement( '#gravityflow_update_button', 3 );
 $I->click( '#gravityflow_update_button' );
-$I->waitForText( 'Entry updated and marked complete.' );
+$I->waitForText( 'Entry updated and marked complete.', 3 );
 $I->see( 'Entry updated and marked complete.' );
 
 // Test - Radio Buttons - Complete
@@ -53,7 +57,7 @@ $I->waitForText( 'Save Progress - Radio Buttons - Complete Default (Pending Inpu
 $I->see( 'Save Progress - Radio Buttons - Complete Default (Pending Input)' );
 $I->seeOptionIsSelected( 'input[name=gravityflow_status]', 'complete' );
 $I->click( '#gravityflow_update_button' );
-$I->waitForText( 'Entry updated and marked complete.' );
+$I->waitForText( 'Entry updated and marked complete.', 3 );
 $I->see( 'Entry updated and marked complete.' );
 
 // Test - Disabled
@@ -61,5 +65,12 @@ $I->waitForText( 'Save Progress - Disabled (Pending Input)' );
 $I->see( 'Save Progress - Disabled (Pending Input)' );
 $I->dontSeeElement( 'input[name=gravityflow_status]' );
 $I->click( '#gravityflow_update_button' );
-$I->waitForText( 'Entry updated and marked complete.' );
+$I->waitForText( 'Entry updated and marked complete.', 3 );
 $I->see( 'Entry updated and marked complete.' );
+
+// Test the output of {assignees} in the page created from the user input step in progress email.
+$I->amOnPage( '/0023-in-progress-email-mt-assignees' );
+$I->waitForText( '0023-in-progress-email-mt-assignees', 3 );
+$I->see( 'Assignees Merge Tag Test' );
+$I->dontSee( '{assignees}' );
+$I->see( 'administrator (Pending)' );

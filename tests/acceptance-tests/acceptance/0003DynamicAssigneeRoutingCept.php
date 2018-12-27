@@ -3,6 +3,8 @@
  * Purpose: Test assignee routing based on the value of a checkbox field
  */
 
+// @group step-user_input
+
 $I = new AcceptanceTester( $scenario );
 
 $I->wantTo( 'Test assignee routing based on the value of a checkbox field' );
@@ -34,6 +36,6 @@ $I->checkOption( 'Publisher 2' );
 
 $I->click( 'Update' );
 
-$I->waitForText( 'User: admin1 admin1 (Pending)', 3 );
+$I->waitForText( 'User: admin2 admin2 (Pending)', 3 );
 $I->see( 'User: admin2 admin2 (Pending)' );
 $I->see( 'User: admin3 admin3 (Pending)' );

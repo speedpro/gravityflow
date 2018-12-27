@@ -355,7 +355,6 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 */
 	public function __construct( $args = array() ) {
 
-
 		$default_args = array(
 			'singular'           => 'entry',    // Not translated - only used in class names
 			'plural'             => 'entries',  // Not translated - only used in class names
@@ -382,9 +381,9 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 			$default_bulk_actions['restart_workflow'] = esc_html__( 'Restart Workflow', 'gravityflow' );
 		}
 
-		$args['bulk_actions'] = isset ( $args['bulk_actions'] ) ? array_merge( $default_bulk_actions, $args['bulk_actions'] ) : $default_bulk_actions;
+		$args['bulk_actions'] = isset( $args['bulk_actions'] ) ? array_merge( $default_bulk_actions, $args['bulk_actions'] ) : $default_bulk_actions;
 
-		require_once( ABSPATH .'wp-admin/includes/template.php' );
+		require_once( ABSPATH . 'wp-admin/includes/template.php' );
 		if ( ! class_exists( 'WP_Screen' ) ) {
 			require_once( ABSPATH . 'wp-admin/includes/class-wp-screen.php' );
 		}
@@ -660,8 +659,8 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		<script>
 			(function ($) {
 				$(document).ready(function () {
-					var gformFieldFilters = <?php echo json_encode( $this->get_field_filters() ) ?>,
-						gformInitFilter = <?php echo json_encode( $this->get_init_filter_vars() ) ?>;
+					var gformFieldFilters = <?php echo json_encode( $this->get_field_filters() ); ?>,
+						gformInitFilter = <?php echo json_encode( $this->get_init_filter_vars() ); ?>;
 					var $form_select = $('#gravityflow-form-select');
 					var filterFormId = $form_select.val();
 					var $entry_filters = $('#entry_filters');
@@ -747,21 +746,9 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 * @param array $item The current entry.
 	 */
 	public function column_id( $item ) {
-		$url_entry = $this->detail_base_url . sprintf( '&id=%d&lid=%d', $item['form_id'], $item['id'] );
-		$url_entry = esc_url( $url_entry );
-		$label = absint( $item['id'] );
-
-		/**
-		 * Allows the field value to be filtered in the status table.
-		 *
-		 * @since 1.7.1
-		 *
-		 * @param string $label The value to be displayed.
-		 * @param int    $item  ['form_id'] The Form ID.
-		 * @param        string 'id' The column name.
-		 * @param array  $item  The entry array.
-		 */
-		$label = apply_filters( 'gravityflow_field_value_status_table', $label, $item['form_id'], 'id', $item );
+		$url_entry = esc_url( $this->get_entry_url( $item ) );
+		$label     = absint( $item['id'] );
+		$label     = $this->filter_field_value( $label, $item, 'id' );
 
 		$link = "<a href='{$url_entry}'>$label</a>";
 		echo $link;
@@ -774,32 +761,20 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 * @param string $column_name The column name.
 	 */
 	public function column_default( $item, $column_name ) {
-		$url_entry = $this->detail_base_url . sprintf( '&id=%d&lid=%d', $item['form_id'], $item['id'] );
-		$url_entry = esc_url( $url_entry );
-		$form_id = rgar( $item, 'form_id' );
-		$form = GFAPI::get_form( $form_id );
+		$url_entry = esc_url( $this->get_entry_url( $item ) );
+		$form_id   = rgar( $item, 'form_id' );
+		$form      = GFAPI::get_form( $form_id );
 
 		/* @var GF_Field $field */
 		$field = GFFormsModel::get_field( $form, $column_name );
 		$value = rgar( $item, $column_name );
 		if ( $field ) {
 			$columns = RGFormsModel::get_grid_columns( $form_id, true );
-			$value = $field->get_value_entry_list( $value, $item, $column_name, $columns, $form );
+			$value   = $field->get_value_entry_list( $value, $item, $column_name, $columns, $form );
 		}
 
 		$label = esc_html( $value );
-
-		/**
-		 * Allows the field value to be filtered in the status table.
-		 *
-		 * @since 1.7.1
-		 *
-		 * @param string $label       The value to be displayed.
-		 * @param int    $item        ['form_id'] The Form ID.
-		 * @param string $column_name The column name.
-		 * @param array  $item        The entry array.
-		 */
-		$label = apply_filters( 'gravityflow_field_value_status_table', $label, $item['form_id'], $column_name, $item );
+		$label = $this->filter_field_value( $label, $item, $column_name );
 
 		$link = "<a href='{$url_entry}'>$label</a>";
 		echo $link;
@@ -811,24 +786,12 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 * @param array $item The current entry.
 	 */
 	public function column_workflow_final_status( $item ) {
-		$url_entry = $this->detail_base_url . sprintf( '&id=%d&lid=%d', $item['form_id'], $item['id'] );
+		$url_entry    = esc_url( $this->get_entry_url( $item ) );
 		$final_status = rgar( $item, 'workflow_final_status' );
-		$label = empty( $final_status ) ? '' : gravity_flow()->translate_status_label( $final_status );
-		$label = esc_html( $label );
-
-		/**
-		 * Allows the field value to be filtered in the status table.
-		 *
-		 * @since 1.7.1
-		 *
-		 * @param string $label The value to be displayed.
-		 * @param int    $item  ['form_id'] The Form ID.
-		 * @param        string 'final_status'.
-		 * @param array  $item  The entry array.
-		 */
-		$label = apply_filters( 'gravityflow_field_value_status_table', $label, $item['form_id'], 'final_status', $item );
-		$url_entry = esc_url( $url_entry );
-		$link = "<a href='{$url_entry}'>$label</a>";
+		$label        = empty( $final_status ) ? '' : gravity_flow()->translate_status_label( $final_status );
+		$label        = esc_html( $label );
+		$label        = $this->filter_field_value( $label, $item, 'final_status' );
+		$link         = "<a href='{$url_entry}'>$label</a>";
 
 		echo $link;
 
@@ -926,7 +889,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 * @param array $item The current entry.
 	 */
 	public function column_created_by( $item ) {
-		$url_entry = $this->detail_base_url . sprintf( '&id=%d&lid=%d', $item['form_id'], $item['id'] );
+		$url_entry = esc_url( $this->get_entry_url( $item ) );
 
 		$user_id = $item['created_by'];
 		if ( $user_id ) {
@@ -952,20 +915,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		 * @param array  $form  The form object for the current entry.
 		 */
 		$label = apply_filters( 'gravityflow_status_submitter_name', $label, $item, $form );
-
-		/**
-		 * Allows the field value to be filtered in the status table.
-		 *
-		 * @since 1.7.1
-		 *
-		 * @param string $label The value to be displayed.
-		 * @param int    $item  ['form_id'] The Form ID.
-		 * @param        string 'created_by'.
-		 * @param array  $item  The entry array.
-		 */
-		$label = apply_filters( 'gravityflow_field_value_status_table', $label, $item['form_id'], 'created_by', $item );
-
-		$url_entry = esc_url( $url_entry );
+		$label = $this->filter_field_value( $label, $item, 'created_by' );
 
 		$link  = "<a href='{$url_entry}'>$label</a>";
 		echo $link;
@@ -977,26 +927,13 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 * @param array $item The current entry.
 	 */
 	public function column_form_id( $item ) {
-		$url_entry = $this->detail_base_url . sprintf( '&id=%d&lid=%d', $item['form_id'], $item['id'] );
+		$url_entry = esc_url( $this->get_entry_url( $item ) );
 
 		$form_id = $item['form_id'];
 		$form    = $this->get_form( $form_id );
 
 		$label = esc_html( $form['title'] );
-
-		/**
-		 * Allows the field value to be filtered in the status table.
-		 *
-		 * @since 1.7.1
-		 *
-		 * @param string $label The value to be displayed
-		 * @param int $item['form_id'] The Form ID
-		 * @param string 'form_id'
-		 * @param array $item The entry array.
-		 */
-		$label = apply_filters( 'gravityflow_field_value_status_table', $label, $item['form_id'], 'form_id', $item );
-
-		$url_entry = esc_url( $url_entry );
+		$label = $this->filter_field_value( $label, $item, 'form_id' );
 
 		$link  = "<a href='{$url_entry}'>$label</a>";
 		echo $link;
@@ -1011,23 +948,40 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		$step_id = rgar( $item, 'workflow_step' );
 		if ( $step_id > 0 ) {
 			$step      = gravity_flow()->get_step( $step_id );
-			$url_entry = $this->detail_base_url . sprintf( '&id=%d&lid=%d', $item['form_id'], $item['id'] );
-
-			$url_entry = esc_url( $url_entry );
+			$url_entry = esc_url( $this->get_entry_url( $item ) );
 
 			$label = $step ? esc_html( $step->get_name() ) : '';
+			$step_status = rgar( $item, 'workflow_step_status_' . $step->get_id() );
 
-			/**
-			 * Allows the field value to be filtered in the status table.
-			 *
-			 * @since 1.7.1
-			 *
-			 * @param string $label The value to be displayed.
-			 * @param int    $item  ['form_id'] The Form ID.
-			 * @param        string 'workflow_step'.
-			 * @param array  $item  The entry array.
-			 */
-			$label = apply_filters( 'gravityflow_field_value_status_table', $label, $item['form_id'], 'workflow_step', $item );
+			if ( 'queued' == $step_status ) {
+
+				$step->_entry = $item;
+				$scheduled_timestamp = $step->get_schedule_timestamp();
+				switch ( $step->schedule_type ) {
+					case 'date':
+						$scheduled_date = $step->schedule_date;
+						break;
+					case 'date_field':
+						$scheduled_date_str = date( 'Y-m-d H:i:s', $scheduled_timestamp );
+						$scheduled_date     = get_date_from_gmt( $scheduled_date_str );
+						break;
+					case 'delay':
+					default:
+						$scheduled_date_str = date( 'Y-m-d H:i:s', $scheduled_timestamp );
+						$scheduled_date     = get_date_from_gmt( $scheduled_date_str );
+				}
+
+				$label .= '' . sprintf( '<div class="step_status_queue">(%s: %s)</div>', esc_html__( 'Queued', 'gravityflow' ), $scheduled_date );
+
+			} elseif ( $step->supports_expiration() && $step->expiration ) {
+				$step->_entry = $item;
+				$expiration_timestamp = $step->get_expiration_timestamp();
+				$expiration_date_str  = date( 'Y-m-d H:i:s', $expiration_timestamp );
+				$expiration_date      = get_date_from_gmt( $expiration_date_str );
+				$label .= sprintf( '<div class="step_status_expires">(%s: %s)</div>', esc_html__( 'Expires', 'gravityflow' ), $expiration_date );
+			}
+
+			$label = $this->filter_field_value( $label, $item, 'workflow_step' );
 			$link  = "<a href='{$url_entry}'>$label</a>";
 			$output = $link;
 		} else {
@@ -1050,22 +1004,10 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 * @param array $item The current entry.
 	 */
 	public function column_date_created( $item ) {
-		$url_entry = $this->detail_base_url . sprintf( '&id=%d&lid=%d', $item['form_id'], $item['id'] );
-		$url_entry = esc_url( $url_entry );
-		$label = GFCommon::format_date( $item['date_created'] );
-
-		/**
-		 * Allows the field value to be filtered in the status table.
-		 *
-		 * @since 1.7.1
-		 *
-		 * @param string $label The value to be displayed.
-		 * @param int    $item  ['form_id'] The Form ID.
-		 * @param        string 'date_created'.
-		 * @param array  $item  The entry array.
-		 */
-		$label = apply_filters( 'gravityflow_field_value_status_table', $label, $item['form_id'], 'date_created', $item );
-		$link  = "<a href='{$url_entry}'>$label</a>";
+		$url_entry = esc_url( $this->get_entry_url( $item ) );
+		$label     = Gravity_Flow_Common::format_date( $item['date_created'], '', true, true );
+		$label     = $this->filter_field_value( $label, $item, 'date_created' );
+		$link      = "<a href='{$url_entry}'>$label</a>";
 		echo $link;
 	}
 
@@ -1078,26 +1020,72 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		$label = '-';
 
 		if ( ! empty( $item['workflow_timestamp'] ) ) {
-			$last_updated = date( 'Y-m-d H:i:s', $item['workflow_timestamp'] );
-			$url_entry = $this->detail_base_url . sprintf( '&id=%d&lid=%d', $item['form_id'], $item['id'] );
-			$last_updated = esc_html( GFCommon::format_date( $last_updated, true, 'Y/m/d' ) );
-
-			/**
-			 * Allows the field value to be filtered in the status table.
-			 *
-			 * @since 1.7.1
-			 *
-			 * @param string $label The value to be displayed.
-			 * @param int    $item  ['form_id'] The Form ID.
-			 * @param        string 'workflow_timestamp'.
-			 * @param array  $item  The entry array.
-			 */
-			$last_updated = apply_filters( 'gravityflow_field_value_status_table', $last_updated, $item['form_id'], 'workflow_timestamp', $item );
-			$url_entry = esc_url( $url_entry );
-			$label  = "<a href='{$url_entry}'>$last_updated</a>";
+			$url_entry    = esc_url( $this->get_entry_url( $item ) );
+			$last_updated = esc_html( Gravity_Flow_Common::format_date( $item['workflow_timestamp'], '', true, true ) );
+			$last_updated = $this->filter_field_value( $last_updated, $item, 'workflow_timestamp' );
+			$label        = "<a href='{$url_entry}'>$last_updated</a>";
 		}
 
 		echo $label;
+	}
+
+	/**
+	 * Outputs the entry payment status.
+	 *
+	 * @since 2.2.4-dev
+	 *
+	 * @param array $item The current entry.
+	 */
+	public function column_payment_status( $item ) {
+		$url_entry      = esc_url( $this->get_entry_url( $item ) );
+		$payment_status = rgar( $item, 'payment_status' );
+		if ( gravity_flow()->is_gravityforms_supported( '2.4' ) ) {
+			$payment_status = GFCommon::get_entry_payment_status_text( $payment_status );
+		}
+
+		$label = $this->filter_field_value( $payment_status, $item, 'payment_status' );
+		$link  = "<a href='{$url_entry}'>$label</a>";
+		echo $link;
+	}
+
+	/**
+	 * Returns the entry detail URL.
+	 *
+	 * @since 2.2.4-dev
+	 *
+	 * @param array $entry The current entry.
+	 *
+	 * @return string
+	 */
+	public function get_entry_url( $entry ) {
+		return sprintf( '%s&id=%d&lid=%d', $this->detail_base_url, $entry['form_id'], $entry['id'] );
+	}
+
+	/**
+	 * Allows the field value to be filtered before being displayed in the status table.
+	 *
+	 * @since 2.2.4-dev
+	 *
+	 * @param string $value       The value to be displayed.
+	 * @param array  $entry       The current entry.
+	 * @param string $column_name The current column name.
+	 *
+	 * @return string
+	 */
+	public function filter_field_value( $value, $entry, $column_name ) {
+		$form_id = $entry['form_id'];
+
+		/**
+		 * Allows the field value to be filtered in the status table.
+		 *
+		 * @since 1.7.1
+		 *
+		 * @param string $value       The value to be displayed.
+		 * @param int    $form_id     The Form ID.
+		 * @param string $column_name The column name.
+		 * @param array  $item        The entry array.
+		 */
+		return apply_filters( 'gravityflow_field_value_status_table', $value, $form_id, $column_name, $entry );
 	}
 
 	/**
@@ -1501,7 +1489,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 
 		try {
 			$start_date = new DateTime( $start_date );
-		} catch (Exception $e) {
+		} catch ( Exception $e ) {
 			return '';
 		}
 
@@ -1522,7 +1510,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 
 		try {
 			$end_date = new DateTime( $end_date );
-		} catch (Exception $e) {
+		} catch ( Exception $e ) {
 			return '';
 		}
 
@@ -1650,9 +1638,9 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		$form_ids = apply_filters( 'gravityflow_form_ids_status', $form_ids, $search_criteria );
 
 		gravity_flow()->log_debug( __METHOD__ . '(): search criteria: ' . print_r( $search_criteria, true ) );
-
+		timer_start();
 		$entries = GFAPI::get_entries( $form_ids, $search_criteria, $sorting, $paging, $total_count );
-
+		gravity_flow()->log_debug( __METHOD__ . '(): duration of get_entries: ' . timer_stop() );
 		gravity_flow()->log_debug( __METHOD__ . '(): count entries: ' . count( $entries ) );
 		gravity_flow()->log_debug( __METHOD__ . '(): total count: ' . $total_count );
 
@@ -1841,8 +1829,8 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		$columns    = $this->get_columns();
 
 		if ( isset( $columns['workflow_final_status'] ) ) {
-			$final_status_offset = array_search('workflow_final_status',array_keys($columns)) + 1;
-			$columns = array_slice($columns, 0, $final_status_offset, true) + array('duration' => esc_html__( 'Duration', 'gravityflow' )) + array_slice($columns, $final_status_offset, NULL, true);
+			$final_status_offset = array_search( 'workflow_final_status', array_keys( $columns ) ) + 1;
+			$columns = array_slice( $columns, 0, $final_status_offset, true ) + array( 'duration' => esc_html__( 'Duration', 'gravityflow' ) ) + array_slice( $columns, $final_status_offset, NULL, true );
 		}
 
 		$export_arr = array();
@@ -1967,8 +1955,8 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		$rows        = array();
 		$columns     = $this->get_columns();
 		if ( isset( $columns['workflow_final_status'] ) ) {
-			$final_status_offset = array_search('workflow_final_status',array_keys($columns)) + 1;
-			$columns = array_slice($columns, 0, $final_status_offset, true) + array('duration' => esc_html__( 'Duration', 'gravityflow' )) + array_slice($columns, $final_status_offset, NULL, true);
+			$final_status_offset = array_search( 'workflow_final_status', array_keys( $columns ) ) + 1;
+			$columns = array_slice( $columns, 0, $final_status_offset, true) + array( 'duration' => esc_html__( 'Duration', 'gravityflow' ) ) + array_slice( $columns, $final_status_offset, NULL, true );
 		}
 		$column_keys = array_keys( $columns );
 
@@ -1982,12 +1970,12 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 				$col_val = null;
 				if ( array_key_exists( $column_key, $item ) ) {
 					switch ( $column_key ) {
-						case 'form_id' :
+						case 'form_id':
 							$form_id = rgar( $item, 'form_id' );
 							$form = $this->get_form( $form_id );
 							$col_val = $form['title'];
-						break;
-						case 'created_by' :
+							break;
+						case 'created_by':
 							$user_id = $item['created_by'];
 							if ( $user_id ) {
 								$user         = get_user_by( 'id', $user_id );
@@ -1999,8 +1987,8 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 							} else {
 								$col_val = $item['ip'];
 							}
-						break;
-						case 'workflow_step' :
+							break;
+						case 'workflow_step':
 							$step_id = rgar( $item, 'workflow_step' );
 							if ( $step_id > 0 ) {
 								$step      = gravity_flow()->get_step( $step_id );
@@ -2008,22 +1996,22 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 							} else {
 								$col_val = $step_id;
 							}
-						break;
-						default :
+							break;
+						default:
 							$col_val = $item[ $column_key ];
 					}
 				} else {
 					switch ( $column_key ) {
 						case 'duration':
-							if( $item[ 'workflow_final_status' ] == 'pending' ) {
+							if ( $item['workflow_final_status'] == 'pending' ) {
 								$duration     = time() - strtotime( $item['date_created'] );
 								$duration_str = $this->format_duration( $duration );
 								$col_val = $duration_str;
 							} else {
 								$col_val = '';
 							}
-						break;
-					}	
+							break;
+					}
 				}
 
 				/**

@@ -27,7 +27,7 @@ class AcceptanceTester extends \Codeception\Actor {
 		$I = $this;
 		$I->amOnPage( '/wp-login.php?action=logout' );
 		$I->click( 'log out' );
-		$I->wait( 1 );
+		$I->waitForText( 'You are now logged out', 3 );
 	}
 
 	/**
@@ -37,10 +37,16 @@ class AcceptanceTester extends \Codeception\Actor {
 	 */
 	public function amOnWorkflowPage( $page ) {
 		$I = $this;
-		$I->amOnPage( '/wp-admin' );
-		$I->click( 'Workflow' );
-		$I->waitForText( $page, 3 );
-		$I->click( $page );
-		$I->waitForText( "Workflow $page", 3 );
+		$I->amOnPage( '/wp-admin/admin.php?page=gravityflow-' . strtolower( $page ) );
+        $I->waitForElement( '#wpwrap', 60, 'body.wp-admin' );
 	}
+
+    /**
+     * @param int $timeout
+     */
+    public function waitForPageLoad( $timeout = 60 )
+    {
+        $I = $this;
+        $I->waitForJS("return jQuery.active == 0;",$timeout);
+    }
 }

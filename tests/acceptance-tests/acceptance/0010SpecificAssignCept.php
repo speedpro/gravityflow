@@ -3,6 +3,9 @@
  * Purpose: Test specific assign
  */
 
+// @group step-approval
+// @group step-notification
+
 $I = new AcceptanceTester( $scenario );
 
 $I->wantTo( 'Test specific assign' );
@@ -20,19 +23,20 @@ $I->selectOption( 'input[name="input_4.2"]', 'Second Choice' );
 $I->selectOption( 'input[name="input_4.3"]', 'Third Choice' );
 $I->scrollTo( [ 'css' => 'input[type=submit]' ], 20, 50 ); // needed for chromedriver
 $I->click( 'Submit' );
-$I->see( 'Thanks for contacting us! We will get in touch with you shortly.' );
+$I->waitForText( 'Thanks for contacting us! We will get in touch with you shortly.', 3 );
 
 // Login to wp-admin
 $I->loginAsAdmin();
 $I->seeInCurrentUrl( '/wp-admin/' );
 
+
 // Go to Inbox
-$I->click( 'Workflow' );
-$I->click( 'Inbox' );
+$I->amOnWorkflowPage( 'Inbox' );
 $I->see( 'Workflow Inbox' );
 $I->click( 'Specific Assign' );
 
 // Approve
+$I->waitForElement( 'button[value=approved]', 3 );
 $I->seeElement( 'button[value=approved]' );
 $I->click( 'button[value=approved]' );
 
