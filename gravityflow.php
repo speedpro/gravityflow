@@ -9,7 +9,7 @@ Author URI: https://gravityflow.io
 License: GPL-2.0+
 Text Domain: gravityflow
 Domain Path: /languages
-GitHub URI: speedpro/gravityflow
+GitHub Plugin URI: speedpro/gravityflow
 
 ------------------------------------------------------------------------
 Copyright 2015-2018 Steven Henty S.L.
