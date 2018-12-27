@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gravityflow\n"
 "Report-Msgid-Bugs-To: https://www.gravityflow.io\n"
-"POT-Creation-Date: 2018-12-02 09:39:25+00:00\n"
+"POT-Creation-Date: 2018-12-27 21:12:53+00:00\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -21,7 +21,7 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Textdomain-Support: yes\n"
-"X-Generator: grunt-wp-i18n1.0.2\n"
+"X-Generator: grunt-wp-i18n 1.0.3\n"
 
 #: class-gravity-flow.php:214
 msgid "Start the Workflow once payment has been received."
@@ -316,7 +316,7 @@ msgstr ""
 msgid "Color"
 msgstr ""
 
-#: class-gravity-flow.php:2401 includes/steps/class-step-approval.php:266
+#: class-gravity-flow.php:2401 includes/steps/class-step-approval.php:277
 #: includes/steps/class-step-user-input.php:164
 msgid "Enable"
 msgstr ""
@@ -426,7 +426,7 @@ msgid "Expires"
 msgstr ""
 
 #: class-gravity-flow.php:3326 includes/pages/class-status.php:974
-#: includes/steps/class-step-approval.php:720
+#: includes/steps/class-step-approval.php:731
 #: includes/steps/class-step-user-input.php:829
 msgid "Queued"
 msgstr ""
@@ -708,7 +708,7 @@ msgstr ""
 msgid "Oops! We could not locate your entry."
 msgstr ""
 
-#: class-gravity-flow.php:4577 includes/steps/class-step-approval.php:948
+#: class-gravity-flow.php:4577 includes/steps/class-step-approval.php:968
 msgid "Error: incorrect entry."
 msgstr ""
 
@@ -865,12 +865,12 @@ msgid "Complete"
 msgstr ""
 
 #: class-gravity-flow.php:6902 includes/steps/class-step-approval.php:50
-#: includes/steps/class-step-approval.php:716
+#: includes/steps/class-step-approval.php:727
 msgid "Approved"
 msgstr ""
 
 #: class-gravity-flow.php:6905 includes/steps/class-step-approval.php:44
-#: includes/steps/class-step-approval.php:718
+#: includes/steps/class-step-approval.php:729
 msgid "Rejected"
 msgstr ""
 
@@ -1001,7 +1001,7 @@ msgid "Cancel URL"
 msgstr ""
 
 #: class-gravity-flow.php:7756 includes/pages/class-inbox.php:377
-#: includes/steps/class-step-approval.php:785
+#: includes/steps/class-step-approval.php:796
 #: includes/steps/class-step-user-input.php:1060
 #: includes/steps/class-step.php:1874
 msgid "Note"
@@ -1410,13 +1410,13 @@ msgstr ""
 
 #: includes/merge-tags/class-merge-tag-workflow-approve.php:60
 #: includes/steps/class-step-approval.php:67
-#: includes/steps/class-step-approval.php:819
+#: includes/steps/class-step-approval.php:833
 msgid "Approve"
 msgstr ""
 
 #: includes/merge-tags/class-merge-tag-workflow-reject.php:60
 #: includes/steps/class-step-approval.php:78
-#: includes/steps/class-step-approval.php:836
+#: includes/steps/class-step-approval.php:855
 msgid "Reject"
 msgstr ""
 
@@ -1961,54 +1961,54 @@ msgid ""
 "Approve or Reject button"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:214
+#: includes/steps/class-step-approval.php:213
 #: includes/steps/class-step-feed-slicedinvoices.php:93
 #: includes/steps/class-step-feed-wp-e-signature.php:104
 #: includes/steps/class-step-user-input.php:220
 msgid "Assignee Email"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:217
+#: includes/steps/class-step-approval.php:216
 msgid "A new entry is pending your approval. Please check your Workflow Inbox."
 msgstr ""
 
-#: includes/steps/class-step-approval.php:221
+#: includes/steps/class-step-approval.php:220
 msgid "Rejection Email"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:225
+#: includes/steps/class-step-approval.php:224
 msgid "Send email when the entry is rejected"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:226
+#: includes/steps/class-step-approval.php:225
 msgid "Enable this setting to send an email when the entry is rejected."
 msgstr ""
 
-#: includes/steps/class-step-approval.php:227
+#: includes/steps/class-step-approval.php:226
 msgid "Entry {entry_id} has been rejected"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:233
+#: includes/steps/class-step-approval.php:232
 msgid "Approval Email"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:237
+#: includes/steps/class-step-approval.php:236
 msgid "Send email when the entry is approved"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:238
+#: includes/steps/class-step-approval.php:237
 msgid "Enable this setting to send an email when the entry is approved."
 msgstr ""
 
-#: includes/steps/class-step-approval.php:239
+#: includes/steps/class-step-approval.php:238
 msgid "Entry {entry_id} has been approved"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:262
+#: includes/steps/class-step-approval.php:273
 msgid "Revert to User Input step"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:264
+#: includes/steps/class-step-approval.php:275
 msgid ""
 "The Revert setting enables a third option in addition to Approve and Reject "
 "which allows the assignee to send the entry directly to a User Input step "
@@ -2017,124 +2017,124 @@ msgid ""
 "entry will be sent to."
 msgstr ""
 
-#: includes/steps/class-step-approval.php:276
+#: includes/steps/class-step-approval.php:287
 #: includes/steps/class-step-user-input.php:200
 msgid "Workflow Note"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:278
+#: includes/steps/class-step-approval.php:289
 #: includes/steps/class-step-user-input.php:202
 msgid ""
 "The text entered in the Note box will be added to the timeline. Use this "
 "setting to select the options for the Note box."
 msgstr ""
 
-#: includes/steps/class-step-approval.php:281
+#: includes/steps/class-step-approval.php:292
 #: includes/steps/class-step-user-input.php:205
 msgid "Hidden"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:282
+#: includes/steps/class-step-approval.php:293
 #: includes/steps/class-step-user-input.php:206
 msgid "Not required"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:283
+#: includes/steps/class-step-approval.php:294
 msgid "Always required"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:286
+#: includes/steps/class-step-approval.php:297
 msgid "Required if approved"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:290
+#: includes/steps/class-step-approval.php:301
 msgid "Required if rejected"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:298
+#: includes/steps/class-step-approval.php:309
 msgid "Required if reverted"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:302
+#: includes/steps/class-step-approval.php:313
 msgid "Required if reverted or rejected"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:307
+#: includes/steps/class-step-approval.php:318
 msgid "Revert Email"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:311
+#: includes/steps/class-step-approval.php:322
 msgid "Send email when the entry is reverted to a user input step"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:312
+#: includes/steps/class-step-approval.php:323
 msgid ""
 "Enable this setting to send an email when the entry is reverted to a user "
 "input. The assignee email for the user input step will not be sent as a "
 "result. "
 msgstr ""
 
-#: includes/steps/class-step-approval.php:313
+#: includes/steps/class-step-approval.php:324
 msgid "Entry {entry_id} has been reverted"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:328
+#: includes/steps/class-step-approval.php:339
 msgid "Post Action if Rejected:"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:332
+#: includes/steps/class-step-approval.php:343
 msgid "Mark Post as Draft"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:333
+#: includes/steps/class-step-approval.php:344
 msgid "Trash Post"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:334
+#: includes/steps/class-step-approval.php:345
 msgid "Delete Post"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:341
+#: includes/steps/class-step-approval.php:352
 msgid "Post Action if Approved:"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:344
+#: includes/steps/class-step-approval.php:355
 msgid "Publish Post"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:582
+#: includes/steps/class-step-approval.php:593
 msgid "Reverted to step"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:591
+#: includes/steps/class-step-approval.php:602
 msgid "Reverted to step:"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:608
+#: includes/steps/class-step-approval.php:619
 msgid "Approved."
 msgstr ""
 
-#: includes/steps/class-step-approval.php:610
+#: includes/steps/class-step-approval.php:621
 msgid "Rejected."
 msgstr ""
 
-#: includes/steps/class-step-approval.php:628
+#: includes/steps/class-step-approval.php:639
 msgid "Entry Approved"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:630
+#: includes/steps/class-step-approval.php:641
 msgid "Entry Rejected"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:711
+#: includes/steps/class-step-approval.php:722
 msgid "Pending Approval"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:854
+#: includes/steps/class-step-approval.php:874
 msgid "Revert"
 msgstr ""
 
-#: includes/steps/class-step-approval.php:953
+#: includes/steps/class-step-approval.php:973
 msgid "Error: step already processed."
 msgstr ""
 
