@@ -208,7 +208,7 @@ module.exports = function (grunt) {
             apigen: {
                 command: [
                     'cd vendor/bin/',
-                    'export TMPDIR=' + process.cwd() + '/apigen_tmp',
+                    'export TMPDIR="' + process.cwd() + '/apigen_tmp"',
                     'php apigen generate --config="../../apigen.neon"'
                 ].join('&&')
             },
