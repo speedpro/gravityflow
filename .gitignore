@@ -8,9 +8,6 @@ Gruntfile.js
 package.json
 package-lock.json
 
-js/*.min.js
-css/*.min.css
-
 codeception.yml
 codeclimate-report.html
 
@@ -21,6 +18,8 @@ tests/acceptance-tests/_output/
 tests/acceptance-tests/_support/_generated/
 tmp/
 vendor/
+
+/*.zip
 
 .svn/
 .DS_Store
