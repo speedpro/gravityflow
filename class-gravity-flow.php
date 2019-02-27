@@ -8164,7 +8164,7 @@ AND m.meta_value='queued'";
 
 				$notices = array( $notice );
 
-				GFCommon::display_dismissible_message( $notices );
+				// GFCommon::display_dismissible_message( $notices );
 			}
 		}
 	}
