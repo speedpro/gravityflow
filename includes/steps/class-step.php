@@ -445,6 +445,15 @@ abstract class Gravity_Flow_Step extends stdClass {
 	}
 
 	/**
+	 * Get required capabilities for the step.
+	 *
+	 * @since 2.5
+	 */
+	public function get_required_capabilities() {
+		return array( 'gravityflow_create_steps' );
+	}
+
+	/**
 	 * Returns the ID of the Form object for the step.
 	 *
 	 * @return int
@@ -717,6 +726,47 @@ abstract class Gravity_Flow_Step extends stdClass {
 	 *
 	 * @return bool|int
 	 */
+	public function get_due_date_timestamp() {
+		if ( ! $this->due_date ) {
+			return false;
+		}
+
+		switch ( $this->due_date_type ) {
+			case 'date':
+				$due_date_timestamp = $this->get_timestamp_date( 'due_date' );
+				break;
+
+			case 'date_field':
+				$due_date_timestamp = $this->get_timestamp_date_field( 'due_date' );
+				break;
+
+			case 'delay':
+			default:
+				$due_date_timestamp = $this->get_timestamp_delay( 'due_date' );
+		}
+
+		/**
+		 * Allows the due date timestamp to be overridden.
+		 *
+		 * @since 2.5
+		 *
+		 * @param int               $due_date_timestamp The current expiration timestamp (UTC).
+		 * @param string            $expiration_type      The type of expiration defined in step settings.
+		 * @param Gravity_Flow_Step $this                 The current step.
+		 *
+		 * @return int
+		 */
+		$due_date_timestamp = apply_filters( 'gravityflow_step_due_date_timestamp', $due_date_timestamp, $this->due_date_type, $this );
+
+		return $due_date_timestamp;
+	}
+
+
+	/**
+	 * Returns the expiration timestamp calculated from the expiration settings.
+	 *
+	 * @return bool|int
+	 */
 	public function get_expiration_timestamp() {
 		if ( ! $this->expiration ) {
 			return false;
@@ -753,11 +803,11 @@ abstract class Gravity_Flow_Step extends stdClass {
 	}
 
 	/**
-	 * Returns the timestamp for the date based expiration or schedule.
+	 * Returns the timestamp for the date based expiration or schedule or due date.
 	 *
 	 * @since 2.3.2
 	 *
-	 * @param string $setting_type The setting type: expiration or schedule.
+	 * @param string $setting_type The setting type: expiration or schedule or due date.
 	 *
 	 * @return bool|int
 	 */
@@ -775,11 +825,11 @@ abstract class Gravity_Flow_Step extends stdClass {
 	}
 
 	/**
-	 * Returns the timestamp for the date field based expiration or schedule.
+	 * Returns the timestamp for the date field based expiration or schedule or due date.
 	 *
 	 * @since 2.3.2
 	 *
-	 * @param string $setting_type The setting type: expiration or schedule.
+	 * @param string $setting_type The setting type: expiration or schedule or due date.
 	 *
 	 * @return bool|int
 	 */
@@ -828,11 +878,11 @@ abstract class Gravity_Flow_Step extends stdClass {
 	}
 
 	/**
-	 * Returns the timestamp for the delay based expiration or schedule.
+	 * Returns the timestamp for the delay based expiration or schedule or due date.
 	 *
 	 * @since 2.3.2
 	 *
-	 * @param string $setting_type The setting type: expiration or schedule.
+	 * @param string $setting_type The setting type: expiration or schedule or due date.
 	 *
 	 * @return bool|int
 	 */
@@ -1010,6 +1060,33 @@ abstract class Gravity_Flow_Step extends stdClass {
 		}
 
 		return $assignees;
+	}
+
+	/**
+	 * Sends the workflow notification, if enabled.
+	 *
+	 * @since 2.5
+	 * @since unknown
+	 */
+	public function send_workflow_notification() {
+
+		if ( ! $this->workflow_notification_enabled ) {
+			return;
+		}
+
+		$type      = 'workflow';
+		$assignees = $this->get_notification_assignees( $type );
+
+		if ( empty( $assignees ) ) {
+			return;
+		}
+
+		$notification = $this->get_notification( $type );
+		$this->send_notifications( $assignees, $notification );
+
+		$note = esc_html__( 'Sent Notification: ', 'gravityflow' ) . $this->get_name();
+		$this->add_note( $note );
+
 	}
 
 	/**
@@ -1821,6 +1898,22 @@ abstract class Gravity_Flow_Step extends stdClass {
 	}
 
 	/**
+	 * Returns TRUE if this step is past the defined due date.
+	 * 
+	 * @since 2.5
+	 *
+	 * @return bool
+	 */
+	public function is_overdue() {
+		$step_due_date = $this->get_due_date_timestamp();
+		$step_timestamp = $this->get_step_timestamp();
+		if ( (int) $step_due_date < (int) time() ) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Override this method to check whether the step is complete in interactive and long running steps.
 	 *
 	 * @return bool
@@ -1901,7 +1994,7 @@ abstract class Gravity_Flow_Step extends stdClass {
 		} else {
 			$source_field   = GFFormsModel::get_field( $form, $field_id );
 			$field_value    = empty( $entry ) ? GFFormsModel::get_field_value( $source_field, array() ) : GFFormsModel::get_lead_field_value( $entry, $source_field );
-			if ( $source_field->type == 'post_category' ) {
+			if ( $source_field && $source_field->type == 'post_category' ) {
 				// Post category values are in the format [name]:[id] e.g. cat-1:1 but GFFormsModel::is_value_match() expects just the category ID.
 				$ary                   = explode( ':', $routing_rule['value'] );
 				$routing_rule['value'] = $ary[1];
@@ -2004,6 +2097,17 @@ abstract class Gravity_Flow_Step extends stdClass {
 
 		gravity_flow()->log_event( 'step', $step_event, $this->get_form_id(), $this->get_entry_id(), $step_status, $this->get_id(), $duration );
 
+	}
+
+	/**
+	 * Override to indicate if the current step supports due date.
+	 *
+	 * @since 2.5
+	 *
+	 * @return bool
+	 */
+	public function supports_due_date() {
+		return false;
 	}
 
 	/**
@@ -2228,6 +2332,28 @@ abstract class Gravity_Flow_Step extends stdClass {
 		$result = $wpdb->query( $sql );
 
 		$this->log_debug( 'Assignees purged. number of rows deleted: ' . $result );
+	}
+
+	/**
+	 * Checks whether the current user is an assignee of this step.
+	 *
+	 * @since 2.5
+	 *
+	 * @return bool
+	 */
+	public function is_user_assignee() {
+		$assignees = $this->get_assignees();
+
+		$is_assignee = false;
+
+		foreach ( $assignees as $assignee ) {
+			if ( $assignee->is_current_user() ) {
+				$is_assignee = true;
+				break;
+			}
+		}
+
+		return $is_assignee;
 	}
 
 }

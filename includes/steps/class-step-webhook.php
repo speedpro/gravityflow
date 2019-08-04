@@ -600,7 +600,10 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 		$this->log_debug( __METHOD__ . '() - log body setting ' . $this->body . ' :: ' . $this->raw_body );
 		if ( $this->body == 'raw' ) {
 			$body = $this->raw_body;
+			add_filter( 'gform_merge_tag_filter', array( $this, 'filter_gform_merge_tag_webhook_raw_encode' ), 40, 5 );
 			$body = GFCommon::replace_variables( $body, $this->get_form(), $entry, false, false, false, 'text' );
+			remove_filter( 'gform_merge_tag_filter', array( $this, 'filter_gform_merge_tag_webhook_raw_encode' ), 40 );
+
 			$this->log_debug( __METHOD__ . '() - got body after replace vars: ' . $body );
 		} elseif ( in_array( $method, array( 'POST', 'PUT', 'PATCH' ) ) ) {
 			$body = $this->get_request_body();
@@ -643,8 +646,15 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 				$this->oauth1_client->config['token_secret'] = $access_credentials['oauth_token_secret'];
 			}
 
-			// Note we don't send the final $options[] parameter in here because our request is always sent in the body.
-			$headers['Authorization'] = $this->oauth1_client->get_full_request_header( $this->get_setting( 'url' ), $method );
+			if ( $method == 'GET' ) {
+				$url = strtok( $url, '?' );
+				$query_str = parse_url( $url, PHP_URL_QUERY );
+				$options = wp_parse_args( $query_str );
+			} else {
+				$options = array();
+			}
+
+			$headers['Authorization'] = $this->oauth1_client->get_full_request_header( $url, $method, $options );
 		}
 
 		$args = array(
@@ -785,6 +795,24 @@ class Gravity_Flow_Step_Webhook extends Gravity_Flow_Step {
 		do_action( 'gravityflow_post_webhook', $response, $args, $entry, $this );
 
 		return $step_status;
+	}
+
+	/**
+	* Ensure gform_merge_tag contents to be passed to the outgoing webhook are properly escaped.
+	*
+	* @since 2.4.5
+	*
+	* @param string              $value       The current merge tag value after initial tag conversion.
+	* @param string              $merge_tag   The merge tag being executed.
+	* @param string              $modifier    The string containing any modifiers for this merge tag.
+	* @param GF_Field            $field       The current field.
+	* @param mixed               $raw_value   The raw value submitted for this field.
+	*
+	* @return string
+	*/
+	function filter_gform_merge_tag_webhook_raw_encode( $value, $merge_tag, $modifier, $field, $raw_value ) {
+		$value = substr( json_encode( $value ), 1, -1 );
+		return $value;
 	}
 
 	/**

@@ -51,6 +51,7 @@ class Gravity_Flow_Entry_Detail {
 		<div class="wrap gf_entry_wrap gravityflow_workflow_wrap gravityflow_workflow_detail">
 
 			<?php
+			self::maybe_display_back_link( $args );
 			self::maybe_show_header( $form, $args );
 
 			$permission_granted = $check_view_entry_permissions ? self::is_permission_granted( $entry, $form, $current_step ) : true;
@@ -92,11 +93,23 @@ class Gravity_Flow_Entry_Detail {
 
 								$editable_fields = array();
 
-								if ( $current_step ) {
-									$can_update      = self::can_update( $current_step );
-									$editable_fields = $can_update ? $current_step->get_editable_fields() : array();
+								$instructions_step = null;
 
-									self::maybe_show_instructions( $can_update, $display_instructions, $current_step, $form, $entry );
+								if ( $current_step ) {
+									$can_update = self::can_update( $current_step );
+									if ( $can_update ) {
+										$editable_fields = $can_update ? $current_step->get_editable_fields() : array();
+										$instructions_step = $current_step;
+									} else {
+										$instructions_step =  gravity_flow()->get_workflow_start_step( $form_id, $entry );
+									}
+
+								} else {
+									$instructions_step = gravity_flow()->get_workflow_complete_step( $form_id, $entry );
+								}
+
+								if ( $instructions_step && $display_instructions ) {
+									self::maybe_show_instructions( $instructions_step, $form, $entry );
 								}
 
 								self::entry_detail_grid( $form, $entry, $display_empty_fields, $editable_fields, $current_step );
@@ -150,9 +163,22 @@ class Gravity_Flow_Entry_Detail {
 			'sidebar'              => true,
 			'step_status'          => true,
 			'workflow_info'        => true,
+			'back_link'            => false,
+			'back_link_text'       => __( 'Return to list', 'gravityflow' ),
+			'back_link_url'        => null,
 		);
 
 		$args = array_merge( $defaults, $args );
+
+		/**
+		 * Allow the entry detail arguments to be overridden.
+		 *
+		 * @since 2.5
+		 *
+		 * @param array $args The entry detail page arguments.
+		 */
+		$args = apply_filters( 'gravityflow_entry_detail_args', $args );
+
 		gravity_flow()->log_debug( __METHOD__ . '() args: ' . print_r( $args, true ) );
 
 		return $args;
@@ -270,6 +296,44 @@ class Gravity_Flow_Entry_Detail {
 	}
 
 	/**
+	 * Displays the back link on entry detail page if enabled.
+	 *
+	 * @since 2.5
+	 * 
+	 * @param array   $args    The properties for the page currently being displayed.
+	 */
+	public static function maybe_display_back_link( $args ) {
+		$back_link = (bool) $args['back_link'];
+		$back_link_text = $args['back_link_text'];
+		$back_link_url = $args['back_link_url'];
+
+		if ( ! $back_link || is_admin() ) {
+			return;
+		}
+
+		$url = is_null( $back_link_url ) ? remove_query_arg( array( 'gworkflow_token', 'new_status', 'view', 'lid', 'id' ) ) : $back_link_url;
+
+		/**
+		 * Allows customization of the back link
+		 *
+		 * Useful in cases where the access into entry detail page is not based out of gravityflow shortcode.
+		 *
+		 * @since 2.5
+		 *
+		 * @var string $url    The customized URL to redirect user to when clicking the back link
+		 * @var array  $args   The shortcode attributes for the current page
+		 *
+		 * @return string
+		 */
+		$url = apply_filters( 'gravityflow_back_link_url_entry_detail', $url, $args );
+
+		printf( '<div class="gravityflow-back-link-container"><a class="back-link" href="%s">%s</a></div>', esc_url( $url ), esc_html( $back_link_text ) );
+
+		return;
+	}
+
+
+	/**
 	 * Checks if the current user has permission to view the entry details.
 	 *
 	 * @param array                  $entry        The current entry.
@@ -342,31 +406,31 @@ class Gravity_Flow_Entry_Detail {
 	/**
 	 * Displays the step instructions, if appropriate.
 	 *
-	 * @param bool              $can_update           Indicates if the user can edit field values on this step.
-	 * @param bool              $display_instructions Indicates if the step instructions should be displayed.
 	 * @param Gravity_Flow_Step $current_step         The step this entry is currently on.
 	 * @param array             $form                 The current form.
 	 * @param array             $entry                The current entry.
 	 */
-	public static function maybe_show_instructions( $can_update, $display_instructions, $current_step, $form, $entry ) {
-		if ( $can_update && $display_instructions && $current_step->instructionsEnable ) {
-			$nl2br = apply_filters( 'gravityflow_auto_format_instructions', true );
-			$nl2br = apply_filters( 'gravityflow_auto_format_instructions_' . $form['id'], $nl2br );
-
-			$instructions = $current_step->instructionsValue;
-			$instructions = GFCommon::replace_variables( $instructions, $form, $entry, false, true, $nl2br );
-			$instructions = do_shortcode( $instructions );
-			$instructions = self::maybe_sanitize_instructions( $instructions );
-
-			?>
-			<div class="postbox gravityflow-instructions">
-				<div class="inside">
-					<?php echo $instructions; ?>
-				</div>
-			</div>
-
-			<?php
+	public static function maybe_show_instructions( $current_step, $form, $entry ) {
+		if ( ! $current_step->instructionsEnable ) {
+			return;
 		}
+		
+		$nl2br = apply_filters( 'gravityflow_auto_format_instructions', true );
+		$nl2br = apply_filters( 'gravityflow_auto_format_instructions_' . $form['id'], $nl2br );
+
+		$instructions = $current_step->instructionsValue;
+		$instructions = GFCommon::replace_variables( $instructions, $form, $entry, false, true, $nl2br );
+		$instructions = do_shortcode( $instructions );
+		$instructions = self::maybe_sanitize_instructions( $instructions );
+
+		?>
+		<div class="postbox gravityflow-instructions">
+			<div class="inside">
+				<?php echo $instructions; ?>
+			</div>
+		</div>
+
+		<?php
 	}
 
 	/**
@@ -706,9 +770,7 @@ class Gravity_Flow_Entry_Detail {
 				</td>
 			</tr>
 			<?php
-			if ( $entry_editor->has_product_fields ) {
-				self::maybe_show_products_summary( $form, $entry, $current_step );
-			}
+			self::maybe_show_products_summary( $form, $entry, $current_step );
 			?>
 		</tbody>
 		<?php
@@ -801,6 +863,19 @@ class Gravity_Flow_Entry_Detail {
 		$field_count             = sizeof( $form['fields'] );
 		$has_product_fields      = false;
 
+		$display_fields_step = false;
+
+		$is_assignee = $current_step ? $current_step->is_user_assignee() : false;
+
+		if ( ! $is_assignee ) {
+			if ( $current_step ) {
+				// Display fields from current step after a POST, otherwise use the start step settings.
+				$display_fields_step = isset( $_POST ) ? $current_step : gravity_flow()->get_workflow_start_step( $form_id, $entry );
+			} else {
+				$display_fields_step = gravity_flow()->get_workflow_complete_step( $form_id, $entry );
+			}
+		}
+
 		foreach ( $form['fields'] as &$field ) {
 			/* @var GF_Field $field */
 
@@ -809,7 +884,7 @@ class Gravity_Flow_Entry_Detail {
 
 			$is_product_field = GFCommon::is_product_field( $field->type );
 
-			$display_field = self::is_display_field( $field, $current_step, $form, $entry, $is_product_field );
+			$display_field = $current_step && $is_assignee ? self::is_display_field( $field, $current_step, $form, $entry, $is_product_field ) : self::is_display_field( $field, $display_fields_step, $form, $entry, $is_product_field );
 
 			$field->gravityflow_is_display_field = $display_field;
 
@@ -854,7 +929,7 @@ class Gravity_Flow_Entry_Detail {
 					}
 
 					if ( ! $display_field ) {
-						continue;
+						continue 2;
 					}
 
 					$value         = RGFormsModel::get_lead_field_value( $entry, $field );
@@ -883,7 +958,7 @@ class Gravity_Flow_Entry_Detail {
 			}
 		}
 
-		if ( $has_product_fields && $format == 'table' ) {
+		if ( $format == 'table' ) {
 			self::maybe_show_products_summary( $form, $entry, $current_step );
 		}
 

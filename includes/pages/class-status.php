@@ -23,7 +23,7 @@ class Gravity_Flow_Status {
 	 *
 	 * @param array $args The status page arguments.
 	 *
-	 * @return array|WP_Error
+	 * @return string|array|WP_Error
 	 */
 	public static function render( $args = array() ) {
 		wp_enqueue_script( 'gform_field_filter' );
@@ -41,6 +41,11 @@ class Gravity_Flow_Status {
 		 * @param array $args The status page and export arguments.
 		 */
 		$args = apply_filters( 'gravityflow_status_args', $args );
+
+		if ( ! is_user_logged_in() && ! $args['display_all'] && ! $args['allow_anonymous'] ) {
+			// The status list can only be viewed by logged in users or when the args are set to display all entries to anonymous users.
+			return '';
+		}
 
 		if ( $args['format'] == 'table' ) {
 			self::status_page( $args );
@@ -67,6 +72,7 @@ class Gravity_Flow_Status {
 			'status_column'        => true,
 			'last_updated'         => false,
 			'filter_hidden_fields' => array(),
+			'due_date'             => false,
 		);
 	}
 
@@ -335,6 +341,15 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	public $last_updated;
 
 	/**
+	 * Should the due date column be displayed?
+	 *
+	 * @since 2.5
+	 *
+	 * @var bool
+	 */
+	public $due_date;
+
+	/**
 	 * A cache of previously retrieved forms.
 	 *
 	 * @var array
@@ -371,6 +386,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 			'step_column'        => true,
 			'status_column'      => true,
 			'last_updated'       => false,
+			'due_date'           => false,
 		);
 
 		$args = wp_parse_args( $args, $default_args );
@@ -406,6 +422,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		$this->submitter_column = $args['submitter_column'];
 		$this->status_column = $args['status_column'];
 		$this->last_updated = $args['last_updated'];
+		$this->due_date = $args['due_date'];
 	}
 
 	/**
@@ -528,7 +545,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 * @return string|int $filter_form_id The form ID to filter the entries by.
 	 */
 	public function form_select() {
-		if ( ! empty( $this->constraint_filters['form_id'] ) ) {
+		if ( ! empty( $this->constraint_filters['form_id'] ) && ! is_array( $this->constraint_filters['form_id'] ) ) {
 
 			printf( '<input type="hidden" name="form-id" id="gravityflow-form-select" value="%s">', esc_attr( $this->constraint_filters['form_id'] ) );
 
@@ -543,6 +560,10 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 
 			foreach ( $forms as $form ) {
 				$form_id = absint( $form['id'] );
+
+				if ( is_array( $this->constraint_filters['form_id'] ) && ! in_array( $form_id,  $this->constraint_filters['form_id'] ) ) {
+				    continue;
+                }
 				$steps   = gravity_flow()->get_steps( $form_id );
 				if ( ! empty( $steps ) ) {
 					$selected = selected( $filter_form_id, $form_id, false );
@@ -576,8 +597,18 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	public function get_field_filters() {
 		$field_filters = null;
 
+		$form_id = ! empty( $this->constraint_filters['form_id'] ) ? $this->constraint_filters['form_id'] : 0;
+
 		$forms = GFAPI::get_forms();
 		foreach ( $forms as $form ) {
+		    if ( is_array( $form_id ) && ! in_array( $form['id'], $form_id ) ) {
+		        continue;
+            }
+
+		    if ( ! empty( $form_id ) && $form['id'] != $form_id )  {
+		        continue;
+            }
+
 			$form_filters = GFCommon::get_field_filter_settings( $form );
 
 			$empty_filter = array(
@@ -947,43 +978,53 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	public function column_workflow_step( $item ) {
 		$step_id = rgar( $item, 'workflow_step' );
 		if ( $step_id > 0 ) {
-			$step      = gravity_flow()->get_step( $step_id );
-			$url_entry = esc_url( $this->get_entry_url( $item ) );
+			$step = gravity_flow()->get_step( $step_id );
 
-			$label = $step ? esc_html( $step->get_name() ) : '';
-			$step_status = rgar( $item, 'workflow_step_status_' . $step->get_id() );
+			if ( ! $step ) {
+			    /* translators: %s: The step ID */
+				$label  = sprintf( esc_html__( 'Step %s (deleted)', 'gravityflow' ), $step_id );
+				$output = sprintf( '<div class="gravityflow-deleted">%s</div>', $label );
 
-			if ( 'queued' == $step_status ) {
+			} else {
 
-				$step->_entry = $item;
-				$scheduled_timestamp = $step->get_schedule_timestamp();
-				switch ( $step->schedule_type ) {
-					case 'date':
-						$scheduled_date = $step->schedule_date;
-						break;
-					case 'date_field':
-						$scheduled_date_str = date( 'Y-m-d H:i:s', $scheduled_timestamp );
-						$scheduled_date     = get_date_from_gmt( $scheduled_date_str );
-						break;
-					case 'delay':
-					default:
-						$scheduled_date_str = date( 'Y-m-d H:i:s', $scheduled_timestamp );
-						$scheduled_date     = get_date_from_gmt( $scheduled_date_str );
+				$url_entry = esc_url( $this->get_entry_url( $item ) );
+
+				$label = $step ? esc_html( $step->get_name() ) : '';
+				$step_status = rgar( $item, 'workflow_step_status_' . $step->get_id() );
+
+				if ( 'queued' == $step_status ) {
+
+					$step->_entry = $item;
+					$scheduled_timestamp = $step->get_schedule_timestamp();
+					switch ( $step->schedule_type ) {
+						case 'date':
+							$scheduled_date = $step->schedule_date;
+							break;
+						case 'date_field':
+							$scheduled_date_str = date( 'Y-m-d H:i:s', $scheduled_timestamp );
+							$scheduled_date     = get_date_from_gmt( $scheduled_date_str );
+							break;
+						case 'delay':
+						default:
+							$scheduled_date_str = date( 'Y-m-d H:i:s', $scheduled_timestamp );
+							$scheduled_date     = get_date_from_gmt( $scheduled_date_str );
+					}
+
+					$label .= '' . sprintf( '<div class="step_status_queue">(%s: %s)</div>', esc_html__( 'Queued', 'gravityflow' ), $scheduled_date );
+
+				} elseif ( $step->supports_expiration() && $step->expiration ) {
+					$step->_entry = $item;
+					$expiration_timestamp = $step->get_expiration_timestamp();
+					$expiration_date_str  = date( 'Y-m-d H:i:s', $expiration_timestamp );
+					$expiration_date      = get_date_from_gmt( $expiration_date_str );
+					$label .= sprintf( '<div class="step_status_expires">(%s: %s)</div>', esc_html__( 'Expires', 'gravityflow' ), $expiration_date );
 				}
 
-				$label .= '' . sprintf( '<div class="step_status_queue">(%s: %s)</div>', esc_html__( 'Queued', 'gravityflow' ), $scheduled_date );
+				$label = $this->filter_field_value( $label, $item, 'workflow_step' );
+				$link  = "<a href='{$url_entry}'>$label</a>";
+				$output = $link;
+            }
 
-			} elseif ( $step->supports_expiration() && $step->expiration ) {
-				$step->_entry = $item;
-				$expiration_timestamp = $step->get_expiration_timestamp();
-				$expiration_date_str  = date( 'Y-m-d H:i:s', $expiration_timestamp );
-				$expiration_date      = get_date_from_gmt( $expiration_date_str );
-				$label .= sprintf( '<div class="step_status_expires">(%s: %s)</div>', esc_html__( 'Expires', 'gravityflow' ), $expiration_date );
-			}
-
-			$label = $this->filter_field_value( $label, $item, 'workflow_step' );
-			$link  = "<a href='{$url_entry}'>$label</a>";
-			$output = $link;
 		} else {
 			$output = '<span class="gravityflow-empty">&dash;</span>';
 		}
@@ -1027,6 +1068,31 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		}
 
 		echo $label;
+	}
+
+	/**
+	 * Outputs the current step due date.
+	 *
+	 * @since 2.5
+	 *
+	 * @param array $item The current entry.
+	 */
+	public function column_due_date( $item ) {
+		$step_id = rgar( $item, 'workflow_step' );
+		if ( $step_id > 0 ) {
+			$step = gravity_flow()->get_step( $step_id );
+			$step->_entry = $item;
+			if ( $step && $step->due_date ) {
+				$value = Gravity_Flow_Common::format_date( date( 'Y-m-d H:i:s', $step->get_due_date_timestamp() ), '', false, false );
+				$output = "<a href='#'>$value</a>";
+			} else {
+				$output = '<span class="gravityflow-empty">&dash;</span>';
+			}
+		} else {
+			$output = '<span class="gravityflow-empty">&dash;</span>';
+		}
+
+		echo $output;
 	}
 
 	/**
@@ -1130,7 +1196,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 
 		$args = $this->get_filter_args();
 
-		if ( ! empty( $args['form-id'] ) && ! empty( $this->field_ids ) ) {
+		if ( ! empty( $args['form-id'] ) && ! is_array( $args['form-id'] ) && ! empty( $this->field_ids ) ) {
 			$form = $this->get_form( $args['form-id'] );
 
 			foreach ( $this->field_ids as $field_id ) {
@@ -1160,7 +1226,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 			$columns['id'] = esc_html__( 'ID', 'gravityflow' );
 		}
 		$columns['date_created'] = esc_html__( 'Date', 'gravityflow' );
-		if ( ! isset( $args['form-id'] ) ) {
+		if ( ! ( isset( $args['form-id'] ) && ! is_array( $args['form-id'] ) )  ) {
 			$columns['form_id'] = esc_html__( 'Form', 'gravityflow' );
 		}
 		if ( $this->submitter_column ) {
@@ -1175,7 +1241,9 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 			$columns['workflow_final_status'] = esc_html__( 'Status', 'gravityflow' );
 		}
 
-		$columns = Gravity_Flow_Common::get_field_columns( $columns, rgar( $args, 'form-id' ), $this->field_ids );
+        if ( ! empty( $args['form-id'] ) && ! is_array( $args['form-id'] ) ) {
+	        $columns = Gravity_Flow_Common::get_field_columns( $columns, rgar( $args, 'form-id' ), $this->field_ids );
+        }
 
 		if ( $step_id = $this->get_filter_step_id() ) {
 			unset( $columns['workflow_step'] );
@@ -1189,6 +1257,10 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 
 		if ( $this->last_updated ) {
 			$columns['workflow_timestamp'] = esc_html__( 'Last Updated', 'gravityflow' );
+		}
+
+		if ( $this->due_date ) {
+			$columns['due_date'] = esc_html__( 'Due Date', 'gravityflow' );
 		}
 
 		/**
@@ -1236,13 +1308,15 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 
 		$args = array();
 
-		if ( ! empty( $this->constraint_filters['form_id'] ) ) {
-			$args['form-id'] = absint( $this->constraint_filters['form_id'] );
-		} elseif ( ! empty( $_REQUEST['form-id'] ) ) {
+		if ( ! empty( $_REQUEST['form-id'] ) ) {
 			$args['form-id'] = absint( $_REQUEST['form-id'] );
+		} elseif ( ! empty( $this->constraint_filters['form_id'] ) ) {
+		    $form_id = $this->constraint_filters['form_id'];
+			$args['form-id'] = is_array( $form_id ) ? array_map( 'absint', $form_id ) : absint( $form_id );
 		}
+
 		$f = isset( $_REQUEST['f'] ) ? $_REQUEST['f'] : '';
-		if ( ! empty( $args['form-id'] ) && $f !== '' ) {
+		if ( ! empty( $args['form-id'] ) && ! is_array( $args['form-id'] ) && $f !== '' ) {
 			$form                  = $this->get_form( absint( $args['form-id'] ) );
 			$field_filters         = $this->get_field_filters_from_request( $form );
 			$args['field_filters'] = $field_filters;
@@ -1357,7 +1431,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 */
 	public function get_field_filter_counts( $args ) {
 		if ( isset( $args['form-id'] ) ) {
-			$form_ids = absint( $args['form-id'] );
+			$form_ids = is_array( $args['form-id'] ) ? array_map( 'absint', $args['form-id'] ) : absint( $args['form-id'] );
 		} else {
 			$form_ids = $this->get_workflow_form_ids();
 		}
@@ -1406,8 +1480,9 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 * @return stdClass|string
 	 */
 	public function get_form_clause( $args ) {
+		global $wpdb;
 		if ( ! empty( $args['form-id'] ) ) {
-			$form_clause = ' AND l.form_id=' . absint( $args['form-id'] );
+			$form_clause = is_array( $args['form-id'] ) ? $wpdb->prepare( ' AND l.form_id IN (%s)', join( ',', $args['form-id'] ) ) : $wpdb->prepare(' AND l.form_id=%d', absint( $args['form-id'] ) );
 		} else {
 			$form_ids = $this->get_workflow_form_ids();
 
@@ -1542,7 +1617,7 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 	 *
 	 * @param array $item The entry.
 	 */
-	protected function single_row_columns( $item ) {
+	public function single_row_columns( $item ) {
 		list( $columns, $hidden ) = $this->get_column_info();
 
 		foreach ( $columns as $column_name => $column_display_name ) {
@@ -1581,8 +1656,10 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		$filter_args = $this->get_filter_args();
 
 		if ( isset( $filter_args['form-id'] ) ) {
-			$form_ids = absint( $filter_args['form-id'] );
-			$this->apply_entry_meta( $form_ids );
+			$form_ids = is_array( $filter_args['form-id'] ) ? $filter_args['form-id'] :  absint( $filter_args['form-id'] );
+			if ( ! is_array( $filter_args['form-id'] ) ) {
+				$this->apply_entry_meta( $form_ids );
+			}
 		} else {
 			$form_ids = $this->get_workflow_form_ids();
 
@@ -1599,6 +1676,17 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 		$this->_column_headers = array( $columns, $hidden, $sortable );
 
 		$search_criteria = $this->get_search_criteria();
+
+		/**
+		 * Allows search_criteria to be adjusted to define which forms' entries are displayed in status table.
+		 *
+		 * Return an array of search_criteria for use with GFAPI.
+		 *
+		 * @since 2.5
+		 *
+		 * @param array   $search_criteria The search criteria
+		 */
+		$search_criteria = apply_filters( 'gravityflow_search_criteria_status', $search_criteria );
 
 		$orderby = ( ! empty( $_REQUEST['orderby'] ) ) ? $_REQUEST['orderby'] : 'date_created';
 
@@ -2002,6 +2090,16 @@ class Gravity_Flow_Status_Table extends WP_List_Table {
 					}
 				} else {
 					switch ( $column_key ) {
+						case 'due_date':
+							$step_id = rgar( $item, 'workflow_step' );
+							if ( $step_id > 0 ) {
+								$step = gravity_flow()->get_step( $step_id );
+								$step->_entry = $item;
+								if ( $step && $step->due_date ) {
+									$col_val = Gravity_Flow_Common::format_date( $step->get_due_date_timestamp(), 'Y-m-d H:i:s', false, false );
+								}
+							}
+							break;
 						case 'duration':
 							if ( $item['workflow_final_status'] == 'pending' ) {
 								$duration     = time() - strtotime( $item['date_created'] );
