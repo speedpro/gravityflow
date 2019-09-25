@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Gravity Flow\n"
 "Report-Msgid-Bugs-To: https://www.gravityflow.io\n"
-"POT-Creation-Date: 2019-05-21 11:09:58+00:00\n"
+"POT-Creation-Date: 2019-06-09 14:00:17+00:00\n"
 "PO-Revision-Date: 2019-05-21 16:38+0000\n"
 "Last-Translator: FX Bénard <fxb@wp-translations.org>\n"
 "Language-Team: Turkish (Turkey) (http://www.transifex.com/gravityflow/gravityflow/language/tr_TR/)\n"
@@ -1642,27 +1642,27 @@ msgstr "Kayıt # "
 msgid "show empty fields"
 msgstr "boş alanları göster"
 
-#: includes/pages/class-entry-detail.php:817
+#: includes/pages/class-entry-detail.php:815
 msgid "Order"
 msgstr "Sipariş"
 
-#: includes/pages/class-entry-detail.php:1107
+#: includes/pages/class-entry-detail.php:1103
 msgid "Product"
 msgstr "Ürün"
 
-#: includes/pages/class-entry-detail.php:1108
+#: includes/pages/class-entry-detail.php:1104
 msgid "Qty"
 msgstr "Adet"
 
-#: includes/pages/class-entry-detail.php:1109
+#: includes/pages/class-entry-detail.php:1105
 msgid "Unit Price"
 msgstr "Birim fiyat"
 
-#: includes/pages/class-entry-detail.php:1110
+#: includes/pages/class-entry-detail.php:1106
 msgid "Price"
 msgstr "Fiyat"
 
-#: includes/pages/class-entry-detail.php:1173
+#: includes/pages/class-entry-detail.php:1169
 #: includes/steps/class-step-feed-slicedinvoices.php:217
 msgid "Total"
 msgstr "Toplam"

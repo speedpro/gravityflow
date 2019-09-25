@@ -55,6 +55,21 @@ Gravity Flow will work with any license of [Gravity Forms](https://gravityflow.i
 
 == ChangeLog ==
 
+= 2.5.7 =
+- Fixed issue where status page filters show a search box.
+
+= 2.5.6 =
+- Added filter gravityflow_entry_url_inbox_table to allow customization of the link from inbox.
+- Added filter gravityflow_approval_revert_step_id to allow customization of the revert step.
+- Added Merge Tag selector to Outgoing Webhook step settings for raw request body.
+- Added the filter gravityflow_step_is_condition_met to enable complex conditional logic for start (or not) a given step.
+- Fixed the Post Creation step creating duplicate posts when the workflow or step is restarted.
+- Fixed back link display on entry detail page to use css with class gravityflow-back-link-container instead of line breaks for spacing.
+- Fixed PHP 7.3 compatibility warning related to entry detail screen display.
+- Fixed number field display on user input steps when the field contained 0 value.
+- Fixed delayed Zapier steps send duplicate content from the first entry in queue.
+- Fixed an issue when gravityflow_form_ids_status runs to ensure entry counts + pagination counts match filtering form IDs.
+
 
 = 2.5.5 =
 - Added security enhancements.
