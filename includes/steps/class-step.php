@@ -892,20 +892,23 @@ abstract class Gravity_Flow_Step extends stdClass {
 		}
 
 		$timestamp = $this->get_step_timestamp();
+		$offset    = trim( $this->{$setting_type . '_delay_offset'} );
 
-		switch ( $this->{$setting_type . '_delay_unit'} ) {
-			case 'minutes' :
-				$timestamp += ( MINUTE_IN_SECONDS * $this->{$setting_type . '_delay_offset'} );
-				break;
-			case 'hours' :
-				$timestamp += ( HOUR_IN_SECONDS * $this->{$setting_type . '_delay_offset'} );
-				break;
-			case 'days' :
-				$timestamp += ( DAY_IN_SECONDS * $this->{$setting_type . '_delay_offset'} );
-				break;
-			case 'weeks' :
-				$timestamp += ( WEEK_IN_SECONDS * $this->{$setting_type . '_delay_offset'} );
-				break;
+		if ( ! empty( $offset ) && is_numeric( $offset ) ) {
+			switch ( $this->{$setting_type . '_delay_unit'} ) {
+				case 'minutes' :
+					$timestamp += ( MINUTE_IN_SECONDS * $offset );
+					break;
+				case 'hours' :
+					$timestamp += ( HOUR_IN_SECONDS * $offset );
+					break;
+				case 'days' :
+					$timestamp += ( DAY_IN_SECONDS * $offset );
+					break;
+				case 'weeks' :
+					$timestamp += ( WEEK_IN_SECONDS * $offset );
+					break;
+			}
 		}
 
 		return $timestamp;
@@ -999,6 +1002,7 @@ abstract class Gravity_Flow_Step extends stdClass {
 		$notification['fromName']          = empty( $this->{$from_name} ) ? gravity_flow()->get_app_setting( 'from_name', get_bloginfo( 'name' ) ) : $this->{$from_name};
 		$notification['from']              = empty( $this->{$from_email} ) ? gravity_flow()->get_app_setting( 'from_email', get_bloginfo( 'admin_email' ) ) : $this->{$from_email};
 		$notification['replyTo']           = $this->{$type . 'reply_to'};
+		$notification['cc']                = $this->{$type . 'cc'};
 		$notification['bcc']               = $this->{$type . 'bcc'};
 		$notification['message']           = $this->{$type . 'message'};
 		$notification['disableAutoformat'] = $this->{$type . 'disable_autoformat'};
@@ -1831,7 +1835,9 @@ abstract class Gravity_Flow_Step extends stdClass {
 
 		$this->log_debug( __METHOD__ . '() - sending notification: ' . print_r( $notification, true ) );
 
+		add_filter( 'gform_notification_enable_cc', '__return_true' );
 		GFCommon::send_notification( $notification, $form, $entry );
+		remove_filter( 'gform_notification_enable_cc', '__return_true' );
 	}
 
 	/**

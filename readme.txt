@@ -2,7 +2,7 @@
 Contributors: stevehenty
 Tags: workflow, approvals, gravity forms
 Requires at least: 4.4
-Tested up to: 5.2
+Tested up to: 5.3
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,8 +55,32 @@ Gravity Flow will work with any license of [Gravity Forms](https://gravityflow.i
 
 == ChangeLog ==
 
+= 2.5.9 =
+- Fixed incorrect feedback when user input step confirmation message content is left empty and the step is completed.
+- Fixed an issue when attempting to modify step settings for a step type that is not active (plugin deactivated, incorrect permissions).
+- Fixed an issue where PHP fatal error is thrown in the filter_gravityview_common_get_entry_check_entry_display() method.
+- Fixed an issue where PHP fatal error is thrown when processing expired entries with steps that no longer exist.
+- Fixed an issue where a multi-select on User Input step settings pages would shrink to a very small width on smaller window resolutions.
+- Fixed a PHP notice which can occur when conditional logic is evaluated and the rule is not based on a form field.
+- Fixed an issue where workflow merge tags would not be available in the merge tag dropdown for notification content fields in certain steps.
+- Fixed an issue where revert notifications would not include the latest workflow note.
+- Fixed an issue where PHP fatal error is thrown from workflow detail link integration with Gravity View 2.5. Credit: the GravityView Team.
+- Updated the Members integration to include the missing Status page Admin Actions capability.
+- Updated the hook used in the WP E-Signature Step to allow all signatures to be collected before continuing workflow.
+- Updated the translations for Catalan and Arabic.
+
+= 2.5.8 =
+- Added support for the delayed payment enhancements in Gravity Forms 2.4.13. Workflow processing can now be delayed when using PayPal Standard, Stripe (Checkout), and other payment add-ons which support the Post Payment Action setting.
+- Added the filter gravityflow_timeline_note_add to support customizing the potential note to add to timeline.
+- Added the filter gravityflow_timeline_notes to support customizing the display of timeline notes.
+- Added support for CC: field to all Gravity Flow notification types.
+- Fixed the "view more" link for the Discussion field being output when merge tags are processed for posts created by the Advanced Post Creation Add-On.
+- Fixed the notification tab for Revert Email on Approval step to have the workflow merge tags options.
+
+
 = 2.5.7 =
 - Fixed issue where status page filters show a search box.
+
 
 = 2.5.6 =
 - Added filter gravityflow_entry_url_inbox_table to allow customization of the link from inbox.

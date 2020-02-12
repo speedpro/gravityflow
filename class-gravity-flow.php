@@ -95,6 +95,7 @@ if ( class_exists( 'GFForms' ) ) {
 			'gravityflow_reports',
 			'gravityflow_activity',
 			'gravityflow_workflow_detail_admin_actions',
+			'gravityflow_admin_actions',
 		);
 
 		/**
@@ -737,7 +738,7 @@ PRIMARY KEY  (id)
 					'handle'  => 'gravityflow_reports',
 					'src'     => $this->get_base_url() . "/js/reports{$min}.js",
 					'version' => $this->_version,
-					'deps' => array( 'jquery', 'google_charts' ),
+					'deps'    => array( 'jquery', 'google_charts' ),
 					'enqueue' => array(
 						array( 'query' => 'page=gravityflow-reports' ),
 					),
@@ -1328,6 +1329,9 @@ PRIMARY KEY  (id)
 
 			if ( $current_step_id ) {
 				$step = $this->get_step( $current_step_id );
+				if ( ! $step ) {
+					wp_die(  __( 'Step settings unavailable. The selected step type is not active.', 'gravityflow' ) );
+				}
 				$step_type = $step->get_type();
 			} else {
 				$step_type = $this->get_setting( 'step_type' );
@@ -1721,7 +1725,8 @@ PRIMARY KEY  (id)
 					'display_fields_mode' => 'all_fields',
 					'destination_complete' => 'next',
 				);
-				$this->insert_feed( $form_id, true, $start_step_meta );
+				$start_step_id = $this->insert_feed( $form_id, true, $start_step_meta );
+				do_action( 'gform_post_save_feed_settings', $start_step_id, $form_id, $start_step_meta, $this );
 
 				$complete_step_meta = array (
 					'step_name' => __( 'Complete', 'gravityflow' ),
@@ -1730,7 +1735,8 @@ PRIMARY KEY  (id)
 					'feed_condition_conditional_logic' => '0',
 					'scheduled' => '0',
 				);
-				$this->insert_feed( $form_id, true, $complete_step_meta );
+				$complete_step_id = $this->insert_feed( $form_id, true, $complete_step_meta );
+				do_action( 'gform_post_save_feed_settings', $complete_step_id, $form_id, $complete_step_meta, $this );
 
 			}
 			return parent::save_feed_settings( $feed_id, $form_id, $settings );
@@ -5782,7 +5788,10 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 		}
 
 		/**
-		 * Determines if the current submission requires a PayPal payment and if the workflow should be delayed.
+		 * Determines if workflow processing should be delayed for the current submission.
+		 *
+		 * @since unknown
+		 * @since 2.5.8 Updated to support the delayed payment enhancements in GF 2.4.13.
 		 *
 		 * @param array $entry The entry created from the current form submission.
 		 * @param array $form  The form object used to process the current submission.
@@ -5792,15 +5801,9 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 				return;
 			}
 
-			$is_delayed = false;
-
-			if ( class_exists( 'GFPayPal' ) ) {
-				$feed = gf_paypal()->get_single_submission_feed( $entry, $form );
-
-				if ( ! empty( $feed ) && $this->is_delayed( $feed ) && $this->has_paypal_payment( $feed, $form, $entry ) ) {
-					$is_delayed = true;
-				}
-			}
+			// From GF 2.4.13 GFPaymentAddOn uses the gform_is_delayed_pre_process_feed filter located in maybe_delay_feed() to delay processing.
+			// With older GF versions maybe_delay_feed() contains the logic for PayPal Standard.
+			$is_delayed = $this->maybe_delay_feed( $entry, $form );
 
 			/**
 			 * Allow processing of the workflow to be delayed.
@@ -5830,6 +5833,9 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 		/**
 		 * Starts the workflow if it was delayed pending PayPal payment.
 		 *
+		 * @since unknown
+		 * @since 2.5.8 Updated to use action_trigger_payment_delayed_feeds().
+		 *
 		 * @param array  $entry          The entry for which the PayPal payment has been completed.
 		 * @param array  $paypal_config  The PayPal feed used to process the entry.
 		 * @param string $transaction_id The PayPal transaction ID.
@@ -5838,10 +5844,30 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 		 * @return void
 		 */
 		public function paypal_fulfillment( $entry, $paypal_config, $transaction_id, $amount ) {
-			if ( empty( $entry['workflow_step'] ) && $this->is_delayed( $paypal_config ) && ! $this->is_entry_view() ) {
-				$form     = GFAPI::get_form( $entry['form_id'] );
+			$this->action_trigger_payment_delayed_feeds( $transaction_id, $paypal_config, $entry );
+		}
+
+		/**
+		 * Starts the workflow if it was delayed pending payment by a GFPaymentAddOn.
+		 *
+		 * @since 2.5.8
+		 *
+		 * @param string     $transaction_id The transaction or subscription ID.
+		 * @param array      $payment_feed   The payment feed which originated the transaction.
+		 * @param array      $entry          The entry currently being processed.
+		 * @param null|array $form           The form currently being processed or null for the legacy PayPal integration.
+		 */
+		public function action_trigger_payment_delayed_feeds( $transaction_id, $payment_feed, $entry, $form = null ) {
+			$this->log_debug( __METHOD__ . '(): Checking fulfillment for transaction ' . $transaction_id . ' for ' . $payment_feed['addon_slug'] );
+
+			if ( empty( $entry['workflow_step'] ) && $this->is_delayed( $payment_feed ) && ! $this->is_entry_view() ) {
+				if ( is_null( $form ) ) {
+					$form = GFFormsModel::get_form_meta( $entry['form_id'] );
+				}
 				$entry_id = absint( $entry['id'] );
 				$this->process_workflow( $form, $entry_id );
+			} else {
+				$this->log_debug( __METHOD__ . '(): Entry ' . $entry['id'] . ' is already fulfilled or workflow is not delayed. No action necessary.' );
 			}
 		}
 
@@ -6017,7 +6043,7 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 		 */
 		public function shortcode( $atts, $content = null ) {
 
-			if ( get_post()->post_type != 'page' ) {
+			if ( get_post_type() != 'page' ) {
 				return '';
 			}
 
@@ -6094,6 +6120,10 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 					} elseif ( is_user_logged_in() || ( $a['display_all'] && $a['allow_anonymous'] ) ) {
 						$html .= $this->get_shortcode_status_page( $a );
 					}
+					break;
+				case 'reports':
+					$html .= $this->get_shortcode_reports_page( $a );
+					break;
 			}
 
 			/**
@@ -6144,7 +6174,6 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 		 */
 
 		public function get_shortcode_defaults() {
-
 			$defaults = array(
 				'page'             => 'inbox',
 				'form'             => null,
@@ -6171,6 +6200,10 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 				'back_link_url'    => null,
 				'context_key'      => '',
 				'due_date'         => false,
+				'range'            => '',
+				'category'         => '',
+				'step_id'          => null,
+				'assignee'         => '',
 			);
 
 			return $defaults;
@@ -6262,9 +6295,9 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 				'workflow_info'     => $a['workflow_info'],
 				'step_status'       => $a['step_status'],
 				'context_key'       => $a['context_key'],
-				'back_link'        => $a['back_link'],
-				'back_link_text'   => $a['back_link_text'],
-				'back_link_url'    => $a['back_link_url'],
+				'back_link'         => $a['back_link'],
+				'back_link_text'    => $a['back_link_text'],
+				'back_link_url'     => $a['back_link_url'],
 			);
 
 			if ( is_null( $args['back_link_url' ] ) ) {
@@ -6338,6 +6371,45 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
 			}
 
 			$this->status_page( $args );
+			$html = ob_get_clean();
+
+			return $html;
+		}
+
+		/**
+		 * Get the HTML for the reports page shortcode.
+		 *
+		 * @since 2.5.9
+		 *
+		 * @param array $a The shortcode attributes.
+		 *
+		 * @return string
+		 */
+		public function get_shortcode_reports_page( $a ) {
+			$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG || isset( $_GET['gform_debug'] ) ? '' : '.min';
+
+			wp_enqueue_script( 'google_charts', 'https://www.google.com/jsapi',  array(), $this->_version );
+			wp_enqueue_script( 'gravityflow_reports', $this->get_base_url() . "/js/reports{$min}.js",  array( 'jquery', 'google_charts' ), $this->_version );
+
+			$args = array(
+				'display_header' => false,
+				'base_url'       => remove_query_arg( array(
+					'page',
+					'range',
+					'form-id',
+					'category',
+					'step-id',
+					'assignee',
+				) ),
+				'form_id'        => $a['form'],
+				'range'          => $a['range'],
+				'category'       => $a['category'],
+				'step_id'        => $a['step_id'],
+				'assignee'       => $a['assignee'],
+			);
+
+			ob_start();
+			$this->reports_page( $args );
 			$html = ob_get_clean();
 
 			return $html;
@@ -6901,6 +6973,12 @@ AND m.meta_value='queued'";
 
 					foreach ( $entries as $entry ) {
 						$current_step = $this->get_step( $entry['workflow_step'], $entry );
+
+						if ( ! $current_step ) {
+							$this->log_debug( __METHOD__ . '(): The step (id: ' . $entry['workflow_step'] . ') no longer exists. Skip entry id: ' . $entry['id'] );
+
+							continue;
+						}
 
 						$this->log_debug( __METHOD__ . '(): processing entry: ' . $entry['id'] );
 
@@ -8248,18 +8326,18 @@ AND m.meta_value='queued'";
 		 *
 		 * @since 2.4.1
 		 *
-		 * @param bool   $is_match     Does the target field’s value match with the rule value?
-		 * @param string $field_value  The field value to use with the comparison.
-		 * @param string $target_value The value from the conditional routing rule to use with the comparison.
-		 * @param string $operation    The conditional routing rule operator.
-		 * @param object $source_field The field object for the source of the field value.
-		 * @param array  $rule         The current rule object.
+		 * @param bool         $is_match     Does the target field’s value match with the rule value?
+		 * @param string|array $field_value  The field value to use with the comparison.
+		 * @param string       $target_value The value from the conditional routing rule to use with the comparison.
+		 * @param string       $operation    The conditional routing rule operator.
+		 * @param object       $source_field The field object for the source of the field value.
+		 * @param array        $rule         The current rule object.
 		 *
 		 * @return bool
 		 */
 		public function filter_gform_is_value_match( $is_match, $field_value, $target_value, $operation, $source_field, $rule ) {
 
-			if ( ! $source_field || ! in_array( $source_field->type, array( 'workflow_multi_user', 'date' ) ) ) {
+			if ( ! ( $source_field instanceof GF_Field ) || ! in_array( $source_field->type, array( 'workflow_multi_user', 'date' ) ) ) {
 				return $is_match;
 			}
 
@@ -8545,16 +8623,17 @@ AND m.meta_value='queued'";
 				return $check_entry_display;
 			}
 
+			$form_id = $entry['form_id'];
 			// Hack to ensure that the meta values for assignees are returned when rule matching in GVCommon::check_entry_display().
 			foreach ( $keys as $key ) {
-				$_fields[ $entry['form_id'] . '_' . $key ] = array( 'id' => $key );
+				$_fields[ $form_id . '_' . $key ] = array( 'id' => $key );
 			}
 
 			$entry = GVCommon::check_entry_display( $entry );
 
 			// Clean up the hack.
 			foreach ( $keys as $key ) {
-				unset( $_fields[ $entry['form_id'] . '_' . $key ] );
+				unset( $_fields[ $form_id . '_' . $key ] );
 			}
 
 			// GVCommon::check_entry_display() returns the entry if permission is granted otherwise false or maybe a WP_Error instance.
@@ -8612,6 +8691,7 @@ AND m.meta_value='queued'";
 				'gravityflow_submit'                        => $this->translate_navigation_label( 'submit' ),
 				'gravityflow_status'                        => $status_label,
 				'gravityflow_status_view_all'               => $status_label . ' - ' . __( 'View All', 'gravityflow' ),
+				'gravityflow_admin_actions'                 => $status_label . ' - ' . __( 'Admin Actions', 'gravityflow' ),
 				'gravityflow_reports'                       => $this->translate_navigation_label( 'reports' ),
 				'gravityflow_activity'                      => $this->translate_navigation_label( 'activity' ),
 				'gravityflow_settings'                      => __( 'Manage Settings', 'gravityflow' ),
@@ -8668,7 +8748,7 @@ AND m.meta_value='queued'";
 					</ul>
 
 					<div id="gform_tab_container" class="gform_tab_container">
-						<div class="gform_tab_content" id="tab_<?php echo $current_tab ?>">
+						<div class="gform_tab_content" id="tab_<?php esc_attr_e( $current_tab ); ?>">
 
 		<?php
 		}

@@ -3,7 +3,7 @@ version: '2'
 services:
   codeception:
     image: gravityflow/codeception:latest
-    # build: .
+    #build: .
     depends_on:
       - wordpress
       - browserstacklocal

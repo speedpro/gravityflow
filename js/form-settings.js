@@ -382,7 +382,7 @@
 	}
 
 	function toggleNotificationTabFields(showType, notificationType) {
-		var fields = ['users', 'routing', 'from_name', 'from_email', 'reply_to', 'bcc', 'subject', 'message', 'autoformat', 'resend', 'gpdf'],
+		var fields = ['users', 'routing', 'from_name', 'from_email', 'reply_to', 'cc', 'bcc', 'subject', 'message', 'autoformat', 'resend', 'gpdf'],
 			prefix = '#gaddon-setting-tab-field-' + notificationType + '_notification_';
 
 		$.each(fields, function (i, field) {
@@ -404,8 +404,8 @@
 
 	function toggleWorkflowNotificationType(showType) {
 		var fields = {
-			select: ['workflow_notification_users\\[\\]', 'workflow_notification_from_name', 'workflow_notification_from_email', 'workflow_notification_reply_to', 'workflow_notification_bcc', 'workflow_notification_subject', 'workflow_notification_message', 'workflow_notification_autoformat', 'workflow_notification_gpdf'],
-			routing: ['workflow_notification_routing', 'workflow_notification_from_name', 'workflow_notification_from_email', 'workflow_notification_reply_to', 'workflow_notification_bcc', 'workflow_notification_subject', 'workflow_notification_message', 'workflow_notification_autoformat', 'workflow_notification_gpdf']
+			select: ['workflow_notification_users\\[\\]', 'workflow_notification_from_name', 'workflow_notification_from_email', 'workflow_notification_reply_to', 'workflow_notification_cc', 'workflow_notification_bcc', 'workflow_notification_subject', 'workflow_notification_message', 'workflow_notification_autoformat', 'workflow_notification_gpdf'],
+			routing: ['workflow_notification_routing', 'workflow_notification_from_name', 'workflow_notification_from_email', 'workflow_notification_reply_to', 'workflow_notification_cc', 'workflow_notification_bcc', 'workflow_notification_subject', 'workflow_notification_message', 'workflow_notification_autoformat', 'workflow_notification_gpdf']
 		};
 		toggleFields(fields, showType, false);
 	}
@@ -454,6 +454,7 @@
 			'assignee_notification_from_name',
 			'assignee_notification_from_email',
 			'assignee_notification_reply_to',
+			'assignee_notification_cc',
 			'assignee_notification_bcc',
 			'assignee_notification_subject',
 			'assignee_notification_message',
@@ -480,6 +481,7 @@
 			'workflow_notification_from_name',
 			'workflow_notification_from_email',
 			'workflow_notification_reply_to',
+			'workflow_notification_cc',
 			'workflow_notification_bcc',
 			'workflow_notification_subject',
 			'workflow_notification_message',
@@ -515,6 +517,9 @@
 			'_gaddon_setting_assignee_notification_message',
 			'_gaddon_setting_approval_notification_message',
 			'_gaddon_setting_rejection_notification_message',
+			'_gaddon_setting_revert_notification_message',
+			'_gaddon_setting_complete_notification_message',
+			'_gaddon_setting_in_progress_notification_message',
 		];
 
 		if (supportedElementIds.indexOf(elementId) < 0) {
