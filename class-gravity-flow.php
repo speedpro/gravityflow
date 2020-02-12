@@ -2005,6 +2005,12 @@ PRIMARY KEY  (id)
 		 */
 		public function get_feeds( $form_id = null ) {
 
+			$cache_key = "GravityFlow::get_feeds|{$form_id}";
+			$cached = GFCache::get($cache_key, $is_cached, false);
+			if ($is_cached) {
+				return $cached;
+			}
+
 			$feeds = parent::get_feeds( $form_id );
 
 			$ordered_ids = get_option( 'gravityflow_feed_order_' . $form_id );
@@ -2042,6 +2048,8 @@ PRIMARY KEY  (id)
 					array_push( $feeds, $complete_feed );
 				}
 			}
+
+			GFcache::set($cache_key, $feeds);
 
 			return $feeds;
 		}
