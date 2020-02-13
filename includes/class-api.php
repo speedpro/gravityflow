@@ -375,7 +375,7 @@ class Gravity_Flow_API {
 	public static function get_inbox_entries( $args = array(), &$total_count = 0 ) {
 		$entries = array();
 
-		timer_start();
+		$start_time = microtime(true);
 
 		$search_criteria = self::get_inbox_search_criteria( $args );
 
@@ -387,7 +387,7 @@ class Gravity_Flow_API {
 			}
 		}
 
-		gravity_flow()->log_debug( __METHOD__ . '(): duration of get_entries: ' . timer_stop() );
+		gravity_flow()->log_debug( __METHOD__ . '(): duration of get_entries: ' . (microtime(true) - $start_time) );
 		gravity_flow()->log_debug( __METHOD__ . "(): {$total_count} pending tasks." );
 
 		return $entries;

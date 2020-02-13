@@ -29,7 +29,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see http://www.gnu.org/licenses.
  */
 
-define( 'GRAVITY_FLOW_VERSION', '2.5.10-dev' );
+define( 'GRAVITY_FLOW_VERSION', '2.5.9' );
 
 define('GRAVITY_FLOW_EDD_STORE_URL', 'https://gravityflow.io');
 
@@ -53,9 +53,9 @@ class Gravity_Flow_Bootstrap
 			return;
 		}
 
-		if (!class_exists('Gravity_Flow_EDD_SL_Plugin_Updater')) {
-			include(dirname(__FILE__) . '/includes/EDD_SL_Plugin_Updater.php');
-		}
+		// if (!class_exists('Gravity_Flow_EDD_SL_Plugin_Updater')) {
+		// 	include(dirname(__FILE__) . '/includes/EDD_SL_Plugin_Updater.php');
+		// }
 
 		if (!class_exists('Gravity_Flow_API')) {
 			include(dirname(__FILE__) . '/includes/class-api.php');
@@ -183,12 +183,12 @@ function gravityflow_action_init()
 			$license_key = trim(rgar($settings, 'license_key'));
 		}
 
-		new Gravity_Flow_EDD_SL_Plugin_Updater(GRAVITY_FLOW_EDD_STORE_URL, __FILE__, array(
-			'version' => GRAVITY_FLOW_VERSION,
-			'license' => $license_key,
-			'item_id' => GRAVITY_FLOW_EDD_ITEM_ID,
-			'author'  => 'Steven Henty',
-		));
+		// new Gravity_Flow_EDD_SL_Plugin_Updater(GRAVITY_FLOW_EDD_STORE_URL, __FILE__, array(
+		// 	'version' => GRAVITY_FLOW_VERSION,
+		// 	'license' => $license_key,
+		// 	'item_id' => GRAVITY_FLOW_EDD_ITEM_ID,
+		// 	'author'  => 'Steven Henty',
+		// ));
 
 		if (isset($_GET['page']) && $_GET['page'] == 'gravityflow-installation') {
 			// The installation wizard was initiated before Gravity Forms was activated - allow it to continue on the same page.
