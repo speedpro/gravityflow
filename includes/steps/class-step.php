@@ -1616,13 +1616,15 @@ abstract class Gravity_Flow_Step extends stdClass {
 		$has_editable_fields = ! empty( $this->editable_fields );
 
 		foreach ( $this->assignees as $assignee_key ) {
-			$args = $this->get_assignee_args( $assignee_key );
+			if ( ! empty( $assignee_key) ) {
+				$args = $this->get_assignee_args( $assignee_key );
 
-			if ( $has_editable_fields ) {
-				$args['editable_fields'] = $this->editable_fields;
+				if ( $has_editable_fields ) {
+					$args['editable_fields'] = $this->editable_fields;
+				}
+
+				$this->maybe_add_assignee( $args );
 			}
-
-			$this->maybe_add_assignee( $args );
 		}
 	}
 
@@ -1683,9 +1685,7 @@ abstract class Gravity_Flow_Step extends stdClass {
 					break;
 
 				case 'assignee_multi_user_field' :
-					$entry      = $this->get_entry();
-					$json_value = $entry[ $id ];
-					$user_ids   = json_decode( $json_value );
+					$user_ids = json_decode( rgar( $this->get_entry(), $id ) );
 					if ( $user_ids && is_array( $user_ids ) ) {
 						$args['type'] = 'user_id';
 						foreach ( $user_ids as $user_id ) {
@@ -2395,6 +2395,29 @@ abstract class Gravity_Flow_Step extends stdClass {
 		}
 
 		return $is_assignee;
+	}
+
+	/**
+	 * Returns an MD5 hash of the assignees of the given step plus the assignee policy.
+	 *
+	 * @since 2.7
+	 *
+	 * @return string
+	 */
+	public function assignees_hash() {
+
+		$assignee_settings['assignees'] = array();
+
+		$assignees = $this->get_assignees();
+
+		foreach ( $assignees as $assignee ) {
+			/* @var Gravity_Flow_Assignee $assignee */
+			$assignee_settings['assignees'][] = $assignee->get_key();
+		}
+
+		$assignee_settings['assignee_policy'] = $this->assignee_policy;
+
+		return md5( serialize( $assignee_settings ) );
 	}
 
 }

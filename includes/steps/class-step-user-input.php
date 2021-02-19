@@ -209,7 +209,7 @@ class Gravity_Flow_Step_User_Input extends Gravity_Flow_Step {
 				'checkbox' => array(
 					'label'          => esc_html__( 'Enable', 'gravityflow' ),
 					'name'           => 'highlight_editable_fields_enabled',
-					'defeault_value' => '0',
+					'default_value' => '0',
 				),
 				'select'   => array(
 					'name'    => 'highlight_editable_fields_class',
@@ -394,6 +394,15 @@ class Gravity_Flow_Step_User_Input extends Gravity_Flow_Step {
 				return false;
 			}
 
+			/**
+			 * Enables pre validation for the User Input step.
+			 *
+			 * @since 2.5.10
+			 *
+			 * @param array  $form                The current form.
+			 */
+			$form = gf_apply_filters( array( 'gform_pre_validation', $form['id'] ), $form );
+			
 			// Loading files that have been uploaded to temp folder.
 			$files = GFCommon::json_decode( rgpost( 'gform_uploaded_files' ) );
 			if ( ! is_array( $files ) ) {
@@ -553,7 +562,6 @@ class Gravity_Flow_Step_User_Input extends Gravity_Flow_Step {
 			if ( $this->confirmation_messageEnable && ! empty( $this->confirmation_messageValue ) ) {
 				$feedback = $this->confirmation_messageValue;
 				$feedback = $assignee->replace_variables( $feedback );
-				$feedback = GFCommon::replace_variables( $feedback, $form, $this->get_entry(), false, true, true, 'html' );
 				$feedback = do_shortcode( $feedback );
 				$feedback = wp_kses_post( $feedback );
 			} else {
@@ -1122,7 +1130,7 @@ class Gravity_Flow_Step_User_Input extends Gravity_Flow_Step {
 	 */
 	public function save_entry( $form, &$entry, $editable_fields ) {
 	    global $wpdb;
-
+	
 		$this->log_debug( __METHOD__ . '(): Saving entry.' );
 
 		$is_new_lead = $entry == null;
@@ -1558,7 +1566,7 @@ class Gravity_Flow_Step_User_Input extends Gravity_Flow_Step {
 	 * @param int          $post_id The ID of the post created from the current entry.
 	 */
 	public function set_post_tags( $value, $post_id ) {
-		$post_tags = array( $value ) ? array_values( $value ) : explode( ',', $value );
+		$post_tags = is_array( $value ) ? array_values( $value ) : explode( ',', $value );
 
 		wp_set_post_tags( $post_id, $post_tags, false );
 	}
