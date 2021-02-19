@@ -71,6 +71,7 @@ packages:
     optional: true
     resolution:
       integrity: sha512-61tiqWCYvMKP7fCTXy0M4VE6uNIwA0qvgFoiDubgfj7uqJ0fdHJFQNnVPGrxhLWlwz0uBPWrQlBH7r8y9vFITQ==
+
   /abbrev/1.1.1:
     dev: true
     resolution:
@@ -1158,6 +1159,7 @@ packages:
       grunt: '>=0.4.0'
     resolution:
       integrity: sha512-a9WSmyTdpN0QBzWNOIDei9P/+e8nzrIUV6O/n67QLcWxvFu1E0D/BNzBLEXgAkWlNqioVICRLtZUXYzvCZB2Sg==
+
   /grunt-known-options/1.1.1:
     dev: true
     engines:

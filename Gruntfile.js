@@ -1,8 +1,8 @@
-
-module.exports = function(grunt) {
+module.exports = function (grunt) {
     'use strict';
 
     var config;
+
 	if ( grunt.file.exists('config.json') ) {
 		config = grunt.file.readJSON('config.json');
 	} else {
@@ -28,33 +28,34 @@ module.exports = function(grunt) {
 			},
 		};
 	}
+
     var gfVersion = '';
 
-	var commitId = process.env.CI_COMMIT_ID ? process.env.CI_COMMIT_ID : '';
+    var commitId = process.env.CI_COMMIT_ID ? process.env.CI_COMMIT_ID : '';
 
-    require('matchdep').filterDev('grunt-*').forEach( grunt.loadNpmTasks );
+    require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
 
-    grunt.getPluginVersion = function( appendCommitId ){
+    grunt.getPluginVersion = function (appendCommitId) {
 
         var p = 'gravityflow.php';
-        if(gfVersion == '' && grunt.file.exists(p)){
+        if (gfVersion == '' && grunt.file.exists(p)) {
             var source = grunt.file.read(p);
             var found = source.match(/Version:\s(.*)/);
             gfVersion = found[1];
         }
 
-		if ( appendCommitId && commitId ) {
-			return gfVersion + '-' + commitId.substring(0, 7);
-		}
+        if (appendCommitId && commitId) {
+            return gfVersion + '-' + commitId.substring(0, 7);
+        }
 
         return gfVersion;
     };
 
-    grunt.getDropboxConfig = function(){
+    grunt.getDropboxConfig = function () {
         var key = config.dropbox.upload_path;
         var obj = {};
-		key += '/Releases';
-		obj[key] = [ 'gravityflow_<%= grunt.getPluginVersion() %>.zip', 'gravityflow_docs_latest.zip'];
+        key += '/Releases';
+        obj[key] = ['gravityflow_<%= grunt.getPluginVersion() %>.zip', 'gravityflow_docs_latest.zip'];
         return obj;
     };
 
@@ -67,7 +68,7 @@ module.exports = function(grunt) {
             all: {
                 options: {
                     cwd: '.',
-					exclude: ['tmp/.*', 'tests/.*', 'vendor/.*'],
+                    exclude: ['tmp/.*', 'tests/.*', 'vendor/.*'],
                     mainFile: 'gravityflow.php',
                     domainPath: 'languages',
                     potComments: 'Copyright 2015-{year} Steven Henty.',
@@ -85,7 +86,7 @@ module.exports = function(grunt) {
                         'x-poedit-searchpath-0': '.',
                         'x-poedit-sourcecharset': 'utf-8',
                         'x-textdomain-support': 'yes',
-                        'x-generator' : 'Gravity Flow Build Server'
+                        'x-generator': 'Gravity Flow Build Server'
                     },
                     type: 'wp-plugin',
                     updateTimestamp: true
@@ -131,26 +132,55 @@ module.exports = function(grunt) {
                 options: {
                     archive: 'gravityflow_<%= grunt.getPluginVersion(true) %>.zip'
                 },
-                files: [
-                    { src: 'includes/**', dest: 'gravityflow/' },
-                    { src: 'js/**', dest: 'gravityflow/'  },
-					{ src: 'fonts/**', dest: 'gravityflow/'  },
-                    { src: 'css/**', dest: 'gravityflow/'  },
-                    { src: 'images/**', dest: 'gravityflow/'  },
-                    { src: 'languages/**', dest: 'gravityflow/'  },
-                    { src: 'readme.txt', dest: 'gravityflow/'  },
-                    { src: 'gravityflow.php', dest: 'gravityflow/'  },
-                    { src: 'class-gravity-flow.php', dest: 'gravityflow/'  },
-                    { src: 'index.php', dest: 'gravityflow/' }
+                files: [{
+                        src: 'includes/**',
+                        dest: 'gravityflow/'
+                    },
+                    {
+                        src: 'js/**',
+                        dest: 'gravityflow/'
+                    },
+                    {
+                        src: 'fonts/**',
+                        dest: 'gravityflow/'
+                    },
+                    {
+                        src: 'css/**',
+                        dest: 'gravityflow/'
+                    },
+                    {
+                        src: 'images/**',
+                        dest: 'gravityflow/'
+                    },
+                    {
+                        src: 'languages/**',
+                        dest: 'gravityflow/'
+                    },
+                    {
+                        src: 'readme.txt',
+                        dest: 'gravityflow/'
+                    },
+                    {
+                        src: 'gravityflow.php',
+                        dest: 'gravityflow/'
+                    },
+                    {
+                        src: 'class-gravity-flow.php',
+                        dest: 'gravityflow/'
+                    },
+                    {
+                        src: 'index.php',
+                        dest: 'gravityflow/'
+                    }
                 ]
             },
             docs: {
                 options: {
                     archive: 'gravityflow_docs_latest.zip'
                 },
-                files: [
-                    { src: 'docs/**' }
-                ]
+                files: [{
+                    src: 'docs/**'
+                }]
             }
         },
 
@@ -161,7 +191,7 @@ module.exports = function(grunt) {
             options: {
                 force: true
             },
-            all: [ 'apigen_tmp', 'docs', 'gravityflow_<%= grunt.getPluginVersion(true) %>.zip', 'gravityflow_docs_latest.zip' ]
+            all: ['apigen_tmp', 'docs', 'gravityflow_<%= grunt.getPluginVersion(true) %>.zip', 'gravityflow_docs_latest.zip']
         },
 
         /**
@@ -179,7 +209,7 @@ module.exports = function(grunt) {
                     'php apigen generate --config="../../apigen.neon"'
                 ].join('&&')
             },
-            transifex:{
+            transifex: {
                 command: [
                     'tx pull -a -f --minimum-perc=1'
                 ].join('&&')
@@ -200,8 +230,8 @@ module.exports = function(grunt) {
             options: {
                 uploadConcurrency: 5, // 5 simultaneous uploads
                 downloadConcurrency: 5, // 5 simultaneous downloads
-				accessKeyId: config.s3InlineDocs.accessKeyId,
-				secretAccessKey: config.s3InlineDocs.secretAccessKey
+                accessKeyId: config.s3InlineDocs.accessKeyId,
+                secretAccessKey: config.s3InlineDocs.secretAccessKey
             },
             inlinedocs: {
                 options: {
@@ -210,20 +240,25 @@ module.exports = function(grunt) {
                     access: 'public-read',
                     differential: true // Only uploads the files that have changed
                 },
-                files: [
-                    {expand: true, cwd: 'docs', src: ['**'], dest: ''},
-                ]
+                files: [{
+                    expand: true,
+                    cwd: 'docs',
+                    src: ['**'],
+                    dest: ''
+                }, ]
             },
-			upload_zip: {
-				options: {
-					region: config.s3UploadZip.region,
-					bucket: config.s3UploadZip.bucket,
-					access: 'public-read'
-				},
-				files: [
-					{expand: true, src: 'gravityflow_<%= grunt.getPluginVersion(true) %>.zip', dest: 'builds'},
-				]
-			}
+            upload_zip: {
+                options: {
+                    region: config.s3UploadZip.region,
+                    bucket: config.s3UploadZip.bucket,
+                    access: 'public-read'
+                },
+                files: [{
+                    expand: true,
+                    src: 'gravityflow_<%= grunt.getPluginVersion(true) %>.zip',
+                    dest: 'builds'
+                }, ]
+            }
         },
 
         potomo: {
@@ -276,43 +311,43 @@ module.exports = function(grunt) {
 		    },
 	    },
 
-		replace: {
-			dist: {
-				options: {
-					patterns: [
-						{
-							match: 'Version: ' + grunt.getPluginVersion(false),
-							replacement: 'Version: ' + grunt.getPluginVersion(true),
-						}
-					]
-				},
-				files: [
-					{expand: true, flatten: true, src: ['gravityflow.php'], dest: 'gravityflow.php'}
-				]
-			}
-		},
+        replace: {
+            dist: {
+                options: {
+                    patterns: [{
+                        match: 'Version: ' + grunt.getPluginVersion(false),
+                        replacement: 'Version: ' + grunt.getPluginVersion(true),
+                    }]
+                },
+                files: [{
+                    expand: true,
+                    flatten: true,
+                    src: ['gravityflow.php'],
+                    dest: 'gravityflow.php'
+                }]
+            }
+        },
 
-		'string-replace': {
-			inline: {
-				files: {
-					'./': 'gravityflow.php',
-				},
-				options: {
-					replacements: [
-						{
-							pattern: 'Version: ' + grunt.getPluginVersion(false),
-							replacement: 'Version: ' + grunt.getPluginVersion(true)
-						}
-					]
-				}
-			}
-		}
+        'string-replace': {
+            inline: {
+                files: {
+                    './': 'gravityflow.php',
+                },
+                options: {
+                    replacements: [{
+                        pattern: 'Version: ' + grunt.getPluginVersion(false),
+                        replacement: 'Version: ' + grunt.getPluginVersion(true)
+                    }]
+                }
+            }
+        }
 
-	});
+    });
 
-	grunt.registerTask('minimize', [ 'uglify:gravityflow', 'cssmin:gravityflow' ]);
-	grunt.registerTask('translations', [ 'makepot', 'shell:transifex', 'potomo' ]);
-	grunt.registerTask('default', [ 'clean', 'string-replace', 'minimize', 'translations', 'compress', 'aws_s3:upload_zip' ]);
-	grunt.registerTask('build', [ 'clean', 'string-replace', 'minimize', 'translations', 'compress', 'dropbox', 'aws_s3:upload_zip', 'clean' ]);
-	grunt.registerTask('publish', [ 'clean', 'minimize', 'translations', /*'shell:apigen', 'aws_s3:inlinedocs',*/ 'compress', 'dropbox', 'clean' ]);
+    grunt.registerTask('minimize', ['uglify:gravityflow', 'cssmin:gravityflow']);
+    grunt.registerTask(['makepot', 'shell:transifex', 'potomo']);
+    grunt.registerTask('default', ['clean', 'string-replace', 'minimize', 'translations', 'compress', 'aws_s3:upload_zip']);
+    grunt.registerTask('build', ['clean', 'string-replace', 'minimize', 'translations', 'compress', 'dropbox', 'aws_s3:upload_zip', 'clean']);
+    grunt.registerTask('publish', ['clean', 'minimize', 'translations', 'shell:apigen', 'aws_s3:inlinedocs', 'compress', 'dropbox', 'clean']);
+    grunt.registerTask('prepare', ['clean', 'string-replace', 'minimize', 'compress']);
 };

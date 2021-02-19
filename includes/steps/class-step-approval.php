@@ -263,6 +263,18 @@ class Gravity_Flow_Step_Approval extends Gravity_Flow_Step {
 					'resend_field'     => false,
 				) ),
 			),
+			// array(
+			// 	'label'   => 'Approve Button Label',
+			// 	'name'    => 'approval_button_label_approve',
+			// 	'type'    => 'text',
+			// 	'default_value' => esc_html__( 'Approve', 'gravityflow' ),
+			// ),
+			// array(
+			// 	'label'   => 'Reject Button Label',
+			// 	'name'    => 'approval_button_label_reject',
+			// 	'type'    => 'text',
+			// 	'default_value' => esc_html__( 'Reject', 'gravityflow' ),
+			// ),
 		) );
 
 		$user_input_step_choices = array();
@@ -885,7 +897,12 @@ class Gravity_Flow_Step_Approval extends Gravity_Flow_Step {
 						type="submit"
 						class="button">
 					<?php
-					$approve_label = esc_html__( 'Approve', 'gravityflow' );
+					// $approve_label = $this->get_setting( 'approval_button_label_approve');
+
+					if( empty( $approve_label ) ) {
+						$approve_label = esc_html__( 'Approve', 'gravityflow' );
+					}
+
 
 					/**
 					 * Allows the 'Approve' label to be modified on the Approval step.
@@ -902,7 +919,11 @@ class Gravity_Flow_Step_Approval extends Gravity_Flow_Step {
 						type="submit"
 						class="button">
 					<?php
-					$reject_label = esc_html__( 'Reject', 'gravityflow' );
+					// $reject_label = $this->get_setting( 'approval_button_label_reject' );
+					
+					if( empty( $reject_label ) ) {
+						$reject_label = esc_html__( 'Reject', 'gravityflow' );
+					}
 
 					/**
 					 * Allows the 'Reject' label to be modified on the Approval step.
