@@ -26,3 +26,7 @@ table.gravityflow-settings-labels th {
 #gravityflow-settings-labels-navigation, #gravityflow-settings-labels-status {
     background: inherit;
 }
+
+#gravityflow-labels-update {
+    background: #3E7DA6;
+}
