@@ -16,6 +16,7 @@ tests/phpunit/build/
 tests/_output/*
 tests/acceptance-tests/_output/
 tests/acceptance-tests/_support/_generated/
+reports/
 tmp/
 vendor/
 

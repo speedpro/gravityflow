@@ -106,6 +106,13 @@ module.exports = function (grunt) {
 
                     // Exclusions
                     '!js/*.min.js',
+                    '!js/scripts-admin.js',
+                    '!js/scripts-theme.js',
+                    '!js/vendor-theme.js',
+                    '!js/vendor-admin.js',
+                    '!js/common-*.*.js',
+                    '!js/admin-*.*.js',
+                    '!js/theme-*.*.js',
                 ]
             }
         },
@@ -209,7 +216,17 @@ module.exports = function (grunt) {
                     'php apigen generate --config="../../apigen.neon"'
                 ].join('&&')
             },
-            transifex: {
+	        buildThemeScripts:{
+		        command: [
+			        'npm run js:theme:prod'
+		        ].join('&&')
+	        },
+	        buildAdminScripts:{
+		        command: [
+			        'npm run js:admin:prod'
+		        ].join('&&')
+	        },
+            transifex:{
                 command: [
                     'tx pull -a -f --minimum-perc=1'
                 ].join('&&')
@@ -344,10 +361,9 @@ module.exports = function (grunt) {
 
     });
 
-    grunt.registerTask('minimize', ['uglify:gravityflow', 'cssmin:gravityflow']);
-    grunt.registerTask(['makepot', 'shell:transifex', 'potomo']);
-    grunt.registerTask('default', ['clean', 'string-replace', 'minimize', 'translations', 'compress', 'aws_s3:upload_zip']);
-    grunt.registerTask('build', ['clean', 'string-replace', 'minimize', 'translations', 'compress', 'dropbox', 'aws_s3:upload_zip', 'clean']);
-    grunt.registerTask('publish', ['clean', 'minimize', 'translations', 'shell:apigen', 'aws_s3:inlinedocs', 'compress', 'dropbox', 'clean']);
-    grunt.registerTask('prepare', ['clean', 'string-replace', 'minimize', 'compress']);
+	grunt.registerTask('minimize', [ 'uglify:gravityflow', 'shell:buildThemeScripts', 'shell:buildAdminScripts', 'cssmin:gravityflow' ]);
+	grunt.registerTask('translations', [ 'makepot', 'shell:transifex', 'potomo' ]);
+	grunt.registerTask('default', [ 'clean', 'string-replace', 'minimize', 'translations', 'compress', 'aws_s3:upload_zip' ]);
+	grunt.registerTask('build', [ 'clean', 'string-replace', 'minimize', 'translations', 'compress', 'dropbox', 'aws_s3:upload_zip', 'clean' ]);
+	grunt.registerTask('publish', [ 'clean', 'minimize', 'translations', /*'shell:apigen', 'aws_s3:inlinedocs',*/ 'compress', 'dropbox', 'clean' ]);
 };

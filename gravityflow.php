@@ -4,7 +4,7 @@
 Plugin Name: Gravity Flow
 Plugin URI: https://gravityflow.io
 Description: Build Workflow Applications with Gravity Forms.
-Version: 2.7.1-dev
+Version: 2.7.2-dev
 Author: Gravity Flow
 Author URI: https://gravityflow.io
 License: GPL-2.0+
@@ -29,16 +29,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see http://www.gnu.org/licenses.
  */
 
-define( 'GRAVITY_FLOW_VERSION', '2.7.1-dev' );
+define('GRAVITY_FLOW_VERSION', '2.7.2-dev');
 
 define('GRAVITY_FLOW_EDD_STORE_URL', 'https://gravityflow.io');
 
 define('GRAVITY_FLOW_EDD_ITEM_ID', 1473);
 
+define('GRAVITY_FLOW_PLUGIN_BASENAME', plugin_basename(__FILE__));
 
-define( 'GRAVITY_FLOW_PLUGIN_BASENAME', plugin_basename( __FILE__ ) );
-
-add_action( 'gform_loaded', array( 'Gravity_Flow_Bootstrap', 'load' ), 1 );
+add_action('gform_loaded', array('Gravity_Flow_Bootstrap', 'load'), 1);
 
 /**
  * Class Gravity_Flow_Bootstrap
@@ -46,122 +45,133 @@ add_action( 'gform_loaded', array( 'Gravity_Flow_Bootstrap', 'load' ), 1 );
 class Gravity_Flow_Bootstrap
 {
 
-	/**
-	 * Includes the required files and registers the add-on with Gravity Forms.
-	 */
-	public static function load()
-	{
+    /**
+     * Includes the required files and registers the add-on with Gravity Forms.
+     */
+    public static function load()
+    {
 
-		if (!method_exists('GFForms', 'include_feed_addon_framework')) {
-			return;
-		}
+        if (!method_exists('GFForms', 'include_feed_addon_framework')) {
+            return;
+        }
 
-		if ( ! class_exists( 'Gravity_Flow_EDD_SL_Plugin_Updater' ) ) {
-			include dirname( __FILE__ ) . '/includes/EDD_SL_Plugin_Updater.php';
-		}
+        if (!class_exists('Gravity_Flow_EDD_SL_Plugin_Updater')) {
+            include dirname(__FILE__) . '/includes/EDD_SL_Plugin_Updater.php';
+        }
 
-		if ( ! class_exists( 'Gravity_Flow_API' ) ) {
-			include dirname( __FILE__ ) . '/includes/class-api.php';
-		}
+        if (!class_exists('Gravity_Flow_API')) {
+            include dirname(__FILE__) . '/includes/class-api.php';
+        }
 
-		if ( ! class_exists( 'Gravity_Flow_Web_API' ) ) {
-			include dirname( __FILE__ ) . '/includes/class-web-api.php';
-		}
+        if (!class_exists('Gravity_Flow_Web_API')) {
+            include dirname(__FILE__) . '/includes/class-web-api.php';
+        }
 
-		if ( ! class_exists( 'Gravity_Flow_REST_API' ) ) {
-			include dirname( __FILE__ ) . '/includes/class-rest-api.php';
-		}
+        if (!class_exists('Gravity_Flow_REST_API')) {
+            include dirname(__FILE__) . '/includes/class-rest-api.php';
+        }
 
-		if ( ! class_exists( 'Gravity_Flow_Extension' ) ) {
-			if ( version_compare( GFForms::$version, '2.5-dev-1', '>=' ) ) {
-				include dirname( __FILE__ ) . '/includes/class-extension.php';
-			} else {
-				include dirname( __FILE__ ) . '/includes/legacy/class-extension.php';
-			}
-		}
+        if (!class_exists('Gravity_Flow_Extension')) {
+            if (version_compare(GFForms::$version, '2.5-dev-1', '>=')) {
+                include dirname(__FILE__) . '/includes/class-extension.php';
+            } else {
+                include dirname(__FILE__) . '/includes/legacy/class-extension.php';
+            }
+        }
 
-		if ( ! class_exists( 'Gravity_Flow_Feed_Extension' ) ) {
-			if ( version_compare( GFForms::$version, '2.5-dev-1', '>=' ) ) {
-				include dirname( __FILE__ ) . '/includes/class-feed-extension.php';
-			} else {
-				include dirname( __FILE__ ) . '/includes/legacy/class-feed-extension.php';
-			}
-		}
+        if (!class_exists('Gravity_Flow_Feed_Extension')) {
+            if (version_compare(GFForms::$version, '2.5-dev-1', '>=')) {
+                include dirname(__FILE__) . '/includes/class-feed-extension.php';
+            } else {
+                include dirname(__FILE__) . '/includes/legacy/class-feed-extension.php';
+            }
+        }
 
-		if ( class_exists( 'GravityView_Field' ) ) {
-			include dirname( __FILE__ ) . '/includes/class-gravityview-detail-link.php';
-		}
+        if (class_exists('GravityView_Field')) {
+            include dirname(__FILE__) . '/includes/class-gravityview-detail-link.php';
+        }
 
-		require_once dirname( __FILE__ ) . '/includes/class-common.php';
+        require_once dirname(__FILE__) . '/includes/class-common.php';
 
-		require_once 'includes/class-connected-apps.php';
-		require_once 'class-gravity-flow.php';
-		require_once 'includes/models/class-activity.php';
-		require_once 'includes/integrations/class-gp-nested-forms.php';
-		require_once 'includes/integrations/class-partial-entries.php';
-		require_once 'includes/class-dynamic-hook.php';
-		require_once 'includes/class-populate-form.php';
+        require_once 'includes/class-connected-apps.php';
+        require_once 'class-gravity-flow.php';
+        require_once 'includes/models/class-activity.php';
+        require_once 'includes/integrations/class-gp-nested-forms.php';
+        require_once 'includes/integrations/class-partial-entries.php';
+        require_once 'includes/class-dynamic-hook.php';
+        require_once 'includes/class-populate-form.php';
 
-		if ( version_compare( GFForms::$version, '2.5-dev-1', '>=' ) ) {
-			require_once 'includes/settings/class-checkbox-textarea.php';
-		}
+        if (version_compare(GFForms::$version, '2.5-dev-1', '>=')) {
+            require_once 'includes/settings/class-checkbox-textarea.php';
+        }
 
-		self::include_assignees();
-		self::include_steps();
-		self::include_fields();
-		self::include_merge_tags();
+        self::include_assignees();
+        self::include_steps();
+        self::include_fields();
+        self::include_merge_tags();
+        self::include_configs();
 
-		GFAddOn::register('Gravity_Flow');
-		do_action('gravityflow_loaded');
-	}
+        GFAddOn::register('Gravity_Flow');
+        do_action('gravityflow_loaded');
+    }
 
-	/**
-	 * Includes the assignee classes.
-	 */
-	public static function include_assignees()
-	{
-		require_once(dirname(__FILE__) . '/includes/assignees/class-assignees.php');
-		require_once(dirname(__FILE__) . '/includes/assignees/class-assignee.php');
-	}
+    /**
+     * Includes the assignee classes.
+     */
+    public static function include_assignees()
+    {
+        require_once dirname(__FILE__) . '/includes/assignees/class-assignees.php';
+        require_once dirname(__FILE__) . '/includes/assignees/class-assignee.php';
+    }
 
-	/**
-	 * Includes the step classes.
-	 */
-	public static function include_steps()
-	{
-		require_once(dirname(__FILE__) . '/includes/steps/class-step.php');
-		require_once(dirname(__FILE__) . '/includes/steps/class-steps.php');
-		require_once(dirname(__FILE__) . '/includes/steps/class-step-feed-add-on.php');
+    /**
+     * Includes the step classes.
+     */
+    public static function include_steps()
+    {
+        require_once dirname(__FILE__) . '/includes/steps/class-step.php';
+        require_once dirname(__FILE__) . '/includes/steps/class-steps.php';
+        require_once dirname(__FILE__) . '/includes/steps/class-step-feed-add-on.php';
 
-		foreach (glob(dirname(__FILE__) . '/includes/steps/class-step-*.php') as $gravity_flow_filename) {
-			require_once($gravity_flow_filename);
-		}
-	}
+        foreach (glob(dirname(__FILE__) . '/includes/steps/class-step-*.php') as $gravity_flow_filename) {
+            require_once $gravity_flow_filename;
+        }
+    }
 
-	/**
-	 * Includes the field classes.
-	 */
-	public static function include_fields()
-	{
-		require_once(dirname(__FILE__) . '/includes/fields/class-fields.php');
+    /**
+     * Includes the field classes.
+     */
+    public static function include_fields()
+    {
+        require_once dirname(__FILE__) . '/includes/fields/class-fields.php';
 
-		foreach (glob(dirname(__FILE__) . '/includes/fields/class-field-*.php') as $gravity_flow_filename) {
-			require_once($gravity_flow_filename);
-		}
-	}
+        foreach (glob(dirname(__FILE__) . '/includes/fields/class-field-*.php') as $gravity_flow_filename) {
+            require_once $gravity_flow_filename;
+        }
+    }
 
-	/**
-	 * Includes the merge tag classes.
-	 */
-	public static function include_merge_tags()
-	{
-		require_once(dirname(__FILE__) . '/includes/merge-tags/class-merge-tag.php');
-		require_once(dirname(__FILE__) . '/includes/merge-tags/class-merge-tags.php');
+    /**
+     * Includes the merge tag classes.
+     */
+    public static function include_merge_tags()
+    {
+        require_once dirname(__FILE__) . '/includes/merge-tags/class-merge-tag.php';
+        require_once dirname(__FILE__) . '/includes/merge-tags/class-merge-tags.php';
 
-		foreach (glob(dirname(__FILE__) . '/includes/merge-tags/class-merge-tag-*.php') as $gravity_flow_filename) {
-			require_once($gravity_flow_filename);
-		}
-	}
+        foreach (glob(dirname(__FILE__) . '/includes/merge-tags/class-merge-tag-*.php') as $gravity_flow_filename) {
+            require_once $gravity_flow_filename;
+        }
+    }
+
+    /**
+     * Includes and initializes the Config class.
+     */
+    public static function include_configs()
+    {
+        require_once 'includes/config/class-js-config.php';
+        $config = new Gravity_Flow_JS_Config();
+    }
+
 }
 
 /**
@@ -171,11 +181,11 @@ class Gravity_Flow_Bootstrap
  */
 function gravity_flow()
 {
-	if (class_exists('Gravity_Flow')) {
-		return Gravity_Flow::get_instance();
-	}
+    if (class_exists('Gravity_Flow')) {
+        return Gravity_Flow::get_instance();
+    }
 
-	return null;
+    return null;
 }
 
 add_action('init', 'gravityflow_action_init', 0);
@@ -186,35 +196,35 @@ add_action('init', 'gravityflow_action_init', 0);
 function gravityflow_action_init()
 {
 
-	$gravity_flow = gravity_flow();
+    $gravity_flow = gravity_flow();
 
-	if ($gravity_flow) {
+    if ($gravity_flow) {
 
-		if (defined('GRAVITY_FLOW_LICENSE_KEY')) {
-			$license_key = GRAVITY_FLOW_LICENSE_KEY;
-		} else {
-			$settings = gravity_flow()->get_app_settings();
+        if (defined('GRAVITY_FLOW_LICENSE_KEY')) {
+            $license_key = GRAVITY_FLOW_LICENSE_KEY;
+        } else {
+            $settings = gravity_flow()->get_app_settings();
 
-			$license_key = trim(rgar($settings, 'license_key'));
-		}
+            $license_key = trim(rgar($settings, 'license_key'));
+        }
 
-		// new Gravity_Flow_EDD_SL_Plugin_Updater(GRAVITY_FLOW_EDD_STORE_URL, __FILE__, array(
-		// 	'version' => GRAVITY_FLOW_VERSION,
-		// 	'license' => $license_key,
-		// 	'item_id' => GRAVITY_FLOW_EDD_ITEM_ID,
-		// 	'author'  => 'Steven Henty',
-		// ));
+        // new Gravity_Flow_EDD_SL_Plugin_Updater(GRAVITY_FLOW_EDD_STORE_URL, __FILE__, array(
+        //     'version' => GRAVITY_FLOW_VERSION,
+        //     'license' => $license_key,
+        //     'item_id' => GRAVITY_FLOW_EDD_ITEM_ID,
+        //     'author'  => 'Steven Henty',
+        // ));
 
-		if (isset($_GET['page']) && $_GET['page'] == 'gravityflow-installation') {
-			// The installation wizard was initiated before Gravity Forms was activated - allow it to continue on the same page.
-			add_action('admin_menu', 'gravityflow_create_menu_item');
-		}
-	} elseif (!is_multisite() && current_user_can('manage_options')) {
-		// Gravity Forms isn't installed and activated.
+        if (isset($_GET['page']) && $_GET['page'] == 'gravityflow-installation') {
+            // The installation wizard was initiated before Gravity Forms was activated - allow it to continue on the same page.
+            add_action('admin_menu', 'gravityflow_create_menu_item');
+        }
+    } elseif (!is_multisite() && current_user_can('manage_options')) {
+        // Gravity Forms isn't installed and activated.
 
-		// Add a Gravity Flow menu item
-		add_action('admin_menu', 'gravityflow_create_menu_item');
-	}
+        // Add a Gravity Flow menu item
+        add_action('admin_menu', 'gravityflow_create_menu_item');
+    }
 }
 
 /**
@@ -224,11 +234,11 @@ function gravityflow_action_init()
  */
 function gravityflow_create_menu_item()
 {
-	if (!current_user_can('manage_options')) {
-		return;
-	}
+    if (!current_user_can('manage_options')) {
+        return;
+    }
 
-	add_menu_page(__('Gravity Flow', 'gravityflow'), __('Gravity Flow', 'gravityforms'), 'manage_options', 'gravityflow-installation', 'gravityflow_installation_wizard', gravityflow_icon(), '16.10');
+    add_menu_page(__('Gravity Flow', 'gravityflow'), __('Gravity Flow', 'gravityforms'), 'manage_options', 'gravityflow-installation', 'gravityflow_installation_wizard', gravityflow_icon(), '16.10');
 }
 
 /**
@@ -238,11 +248,10 @@ function gravityflow_create_menu_item()
  */
 function gravityflow_installation_wizard()
 {
-	require_once('includes/wizard/class-installation-wizard.php');
-	$wizard = new Gravity_Flow_Installation_Wizard;
-	$wizard->display();
+    require_once 'includes/wizard/class-installation-wizard.php';
+    $wizard = new Gravity_Flow_Installation_Wizard;
+    $wizard->display();
 }
-
 
 /**
  * Returns the SVG icon for use in the admin menu.
@@ -253,7 +262,7 @@ function gravityflow_installation_wizard()
  */
 function gravityflow_icon()
 {
-	$svg_xml = '<?xml version="1.0" standalone="no"?>
+    $svg_xml = '<?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg width="100%" height="100%" viewBox="0 20 581 640" version="1.1" xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"
