@@ -2,7 +2,7 @@
 Contributors: stevehenty
 Tags: workflow, approvals, gravity forms
 Requires at least: 5.2
-Tested up to: 5.7
+Tested up to: 5.7.1
 License: GPL-2.0+
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,7 +33,7 @@ Twitter: [Gravity Flow](https://twitter.com/GravityFlow_io)
 
 1. [Purchase and install Gravity Forms](https://gravityflow.io/out/gravityforms)
 2. Wordpress 4.2+
-3. Gravity Forms 2.3+
+3. Gravity Forms 2.4+
 
 
 = Support =
@@ -54,6 +54,13 @@ https://gravityflow.io/contact/
 Gravity Flow will work with any license of [Gravity Forms](https://gravityflow.io/out/gravityforms).
 
 == ChangeLog ==
+
+= 2.7.2 =
+- Fixed deprecation warnings when saving steps on Gravity Forms 2.5.
+- Fixed an issue that causes Gravity Forms OAuth1 connected apps to fail verification.
+- Fixed an issue where the File Upload field generates a validation error when progress is saved on the User Input Step.
+- Fixed an issue when the filter gravityflow_form_ids_status in use with the filter gravityflow_status_filter fetches invalid counters for the Status Page.
+
 
 = 2.7.1 =
 - Added action gravityflow_step_start for custom logic to perform when any step starts.
