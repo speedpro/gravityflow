@@ -317,7 +317,8 @@ if ( class_exists( 'GFForms' ) ) {
 		 * @return string
 		 */
 		public function get_short_title() {
-			return $this->translate_navigation_label( 'workflow' );
+			$is_gravityforms_uninstall = rgget( 'page' ) == 'gf_settings' && rgget( 'subview' ) == 'uninstall';
+			return $is_gravityforms_uninstall ? $this->_title : $this->translate_navigation_label( 'workflow' );
 		}
 
 		/**
@@ -833,7 +834,7 @@ PRIMARY KEY  (id)
 				if ( $shortcode_found ) {
 					$this->enqueue_form_scripts();
 					$nonce = wp_create_nonce( 'wp_rest' );
-					wp_enqueue_script( 'sack', "/wp-includes/js/tw-sack$this->min.js", array(), '1.6.1' );
+					wp_enqueue_script( 'sack', "/wp-includes/js/tw-sack{$this->min()}.js", array(), '1.6.1' );
 					wp_enqueue_script( 'gravityflow_entry_detail', $this->get_base_url() . "/js/entry-detail{$this->min()}.js", array( 'jquery', 'sack' ), $this->_version );
 					wp_enqueue_script( 'gravityflow_status_list', $this->get_base_url() . "/js/status-list{$this->min()}.js",  array( 'jquery', 'jquery-ui-core', 'jquery-ui-datepicker', 'gform_datepicker_init' ), $this->_version );
 					wp_enqueue_script( 'gform_field_filter', GFCommon::get_base_url() . "/js/gf_field_filter{$this->min()}.js",  array( 'jquery', 'gform_datepicker_init' ), $this->_version );
@@ -841,6 +842,7 @@ PRIMARY KEY  (id)
 					wp_enqueue_script( 'gravityflow_inbox', $this->get_base_url() . "/js/inbox{$this->min()}.js",  array(), $this->_version );
 
 					wp_enqueue_style( 'gform_admin',  GFCommon::get_base_url() . "/css/admin{$this->min()}.css", null, $this->_version );
+					wp_enqueue_style( 'gform_font_awesome',  GFCommon::get_base_url() . "/css/font-awesome{$this->min()}.css", null, $this->_version );
 					wp_enqueue_style( 'gravityflow_entry_detail',  $this->get_base_url() . "/css/entry-detail{$this->min()}.css", null, $this->_version );
 					wp_enqueue_style( 'gravityflow_frontend_css', $this->get_base_url() . "/css/frontend{$this->min()}.css", null, $this->_version );
 					wp_enqueue_style( 'gravityflow_status', $this->get_base_url() . "/css/status{$this->min()}.css", null, $this->_version );
@@ -3150,7 +3152,7 @@ PRIMARY KEY  (id)
 			<script>
 				(function($) {
 					$( '#step_highlight' ).click(function(){
-						$('.gravityflow-step-highlight-settings').slideToggle();
+						$('.gravityflow-step-highlight-settings').toggle();
 					});
 					$(document).ready(function () {
 						$("#step_highlight_color").wpColorPicker();
@@ -3435,15 +3437,27 @@ PRIMARY KEY  (id)
 		 * @param array $settings The settings to be potentially saved.
 		 */
 		public function validate_highlight_settings( $field, $settings ) {
-			$field = $this->prepare_settings_step_highlight( $field );
 
+			if ( ! $this->is_gravityforms_supported( '2.5-beta-1' ) ) {
+				$field = $this->prepare_settings_step_highlight( $field );
+				$checkbox_field = $field['settings']['step_highlight'];
+				$this->validate_checkbox_settings( $checkbox_field, $settings );
+				$color_field = $field['settings']['step_highlight_color'];
+				$this->validate_text_settings( $color_field, $settings );
+				$this->validate_step_highlight_color_settings( $color_field, $settings );
+				return;
+			}
+
+			$field = $this->prepare_settings_step_highlight( $field );
 			$checkbox_field = $field['settings']['step_highlight'];
-			$this->validate_checkbox_settings( $checkbox_field, $settings );
+			$renderer  = $this->get_settings_renderer();
+			$cb_field     = new \Gravity_Forms\Gravity_Forms\Settings\Fields\Checkbox( $checkbox_field, $renderer );
+			$cb_field->do_validation( $settings[ 'step_highlight'] );
 
 			$color_field = $field['settings']['step_highlight_color'];
-			$this->validate_text_settings( $color_field, $settings );
+			$text_field     = new \Gravity_Forms\Gravity_Forms\Settings\Fields\Text( $color_field, $renderer );
+			$text_field->do_validation( $settings[ 'step_highlight_color'] );
 			$this->validate_step_highlight_color_settings( $color_field, $settings );
-
 		}
 
 		/**
@@ -3704,7 +3718,7 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
             	    v = $(this).find('.gform-filter-value').val();
                 filters.push({field : f, operator: o, value: v });
             });
-            var input = filterSetting.find('input.gaddon-hidden'),
+            var input = filterSetting.find('input[type=hidden]'),
                 mode = filterSetting.find('select[name=mode]').val(),
                 val = {
                     mode : mode,
@@ -3715,6 +3729,7 @@ jQuery('#setting-entry-filter-{$name}').gfFilterUI({$filter_settings_json}, {$va
         $('#setting-entry-filter-{$name}').on('change', 'select[name=mode]', setFilterValue);
 	    $('#setting-entry-filter-{$name}').on('change', '.gform-filter-operator', setFilterValue);
 	    $('#setting-entry-filter-{$name}').on('change blur', '.gform-filter-value', setFilterValue);
+	    $('#setting-entry-filter-{$name}').on('DOMSubtreeModified', setFilterValue);
     });
 })(jQuery);
 </script>";
